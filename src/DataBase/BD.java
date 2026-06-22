@@ -1,27 +1,33 @@
 package DataBase;
+
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
 import java.sql.Statement;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class BD {
     private static final String BD_URL = "jdbc:sqlite:BD.db";
+    public static final String TABLA_FAMILIA = "familia";
+    public static final String TABLA_ARCHIVOS = "archivos";
+    public static final String TABLA_TIPOS = "tipos";
     private static final int NUM_TABLES = 3;
 
     private Connection conexion;
 
     public BD() {
         // Nos conectamos con la base de datos mediante SQLite
-        try (Connection conexion = DriverManager.getConnection(BD_URL)) {
+        try {
+            this.conexion = DriverManager.getConnection(BD_URL);
             System.out.println("Se ha establecido conexión con la base de datos");
             conexion.setAutoCommit(false);
 
-            this.conexion = conexion;
-
-             System.out.println("Creando tablas..."); // DEBUG
+            System.out.println("Creando tablas..."); // DEBUG
             String[] createTables = getCreateTables();
 
             System.out.println("Ejecutando sentencias..."); // DEBUG
@@ -40,16 +46,16 @@ public class BD {
     private String[] getCreateTables() {
         String[] createTables = new String[NUM_TABLES];
         // Sentencias CREATE TABLE de la BD
-        createTables[0] = "CREATE TABLE IF NOT EXISTS familiares ("
+        createTables[0] = "CREATE TABLE IF NOT EXISTS " + TABLA_FAMILIA + " ("
                             + "dni TEXT PRIMARY KEY,"
                             + "nombre TEXT NOT NULL"
                             + ");";
 
-        createTables[1] = "CREATE TABLE IF NOT EXISTS tipos ("
+        createTables[1] = "CREATE TABLE IF NOT EXISTS " + TABLA_TIPOS + " ("
                             + "nombre TEXT PRIMARY KEY"
                             + ");";
 
-        createTables[2] = "CREATE TABLE IF NOT EXISTS archivos ("
+        createTables[2] = "CREATE TABLE IF NOT EXISTS " + TABLA_ARCHIVOS + " ("
                             + "nombre TEXT PRIMARY KEY,"
                             + "tipo TEXT,"
                             + "ruta TEXT NOT NULL,"
@@ -62,51 +68,23 @@ public class BD {
         return createTables;
     }
 
-    public void insertarFamiliar(Familiar f) throws SQLException, SQLTimeoutException {
-        String insert = "INSERT INTO familiares (dni, nombre) VALUES (?, ?);";
-        ejecutarSQL(insert, f.toArray());
-        System.out.println("Familiar registrado con éxito.");
-    }
-
-    public void insertarFamiliar(String dni, String nombre) throws SQLException, SQLTimeoutException {
-        String insert = "INSERT INTO familiares (dni, nombre) VALUES (?, ?);";
-        ejecutarSQL(insert, dni, nombre);
-        System.out.println("Familiar registrado con éxito.");
-    }
-
-    public void insertarTipo(String tipo) throws SQLException, SQLTimeoutException {
-        String insert = "INSERT INTO tipos (nombre) VALUES (?);";
-        ejecutarSQL(insert, tipo);
-        System.out.println("Tipo registrado con éxito.");
-    }
-
-    public void insertarArchivo(Archivo a) throws SQLException, SQLTimeoutException {
-        String insert = "INSERT INTO archivos (nombre, tipo, ruta, fecha, familiar) VALUES (?, ?, ?, ?, ?);";
-        ejecutarSQL(insert, a.toArray());
-    }
-
-    public void insertarArchivo(String nombre, String tipo, String ruta, String fecha, String dni_familiar) throws SQLException, SQLTimeoutException {
-        String insert = "INSERT INTO archivos (nombre, tipo, ruta, fecha, familiar) VALUES (?, ?, ?, ?, ?);";
-        ejecutarSQL(insert, nombre, tipo, ruta, fecha, dni_familiar);
-        System.out.println("Archivo registrado con éxito.");
-    }
-
     /**
      * Ejecuta cualquier sentencia SQL: DML y DDL
      * @param sql La sentencia SQL con interrogantes (?).
      * @param parametros Los valores para rellenar los interrogantes (separados por comas).
      */
-    public void ejecutarSQL(String sql, Object... parametros) throws SQLException, SQLTimeoutException {
-        PreparedStatement statement = conexion.prepareStatement(sql);
+    public void ejecutarSQL(String sql, Object... parametros) throws SQLException {
+        try (PreparedStatement statement = conexion.prepareStatement(sql)) {
+                
+            // Recorre cada parámetro y lo inyecta en su '?' correspondiente
+            for (int i = 0; i < parametros.length; i++) {
+                // Usamos setObject para que Java decida automáticamente si es String, int, etc.
+                statement.setObject(i + 1, parametros[i]); 
+            }
             
-        // Recorre cada parámetro y lo inyecta en su '?' correspondiente
-        for (int i = 0; i < parametros.length; i++) {
-            // Usamos setObject para que Java decida automáticamente si es String, int, etc.
-            statement.setObject(i + 1, parametros[i]); 
+            statement.executeUpdate();
+            conexion.commit();
         }
-        
-        statement.executeUpdate();
-        conexion.commit();
     }
 
     /**
@@ -144,4 +122,35 @@ public class BD {
         
         return ejecutado;
     }
+
+    /**
+     * TODO
+     * @param <T>
+     * @param sql
+     * @param mapeador
+     * @param parametros
+     * @return
+     * @throws SQLException
+     */
+    public <T> List<T> seleccionarSQL(String sql, MapeadorFila<T> mapeador, Object... parametros) throws SQLException {
+    List<T> resultados = new LinkedList<>();
+
+    // 1. Envolvemos SOLO el PreparedStatement
+    try (PreparedStatement pstmt = conexion.prepareStatement(sql)) {
+
+        for (int i = 0; i < parametros.length; i++) {
+            pstmt.setObject(i + 1, parametros[i]);
+        }
+
+        // 2. Envolvemos SOLO el ResultSet
+        try (ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                resultados.add(mapeador.mapear(rs));
+            }
+        }
+        
+    }
+
+    return resultados;
+}
 }

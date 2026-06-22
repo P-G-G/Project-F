@@ -1,24 +1,45 @@
 package UI;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
+
+import DataBase.Archivo;
+import DataBase.Familiar;
+
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Ventana extends JFrame {
 
-    // Variables a nivel de clase para poder leerlas al hacer clic en "Guardar"
+    private String[] familia;
+    private String[] tipos;
+
     private JComboBox<String> comboFamiliares;
     private JComboBox<String> comboTipos;
-    private JLabel lblRutaSeleccionada;
+    private JSpinner selectorFecha;
+
+    private ActionListener accionGuardarArchivo;
+    private ActionListener accionGuardarFamiliar;
+    private ActionListener accionGuardarTipo;
+
+    private ActionListener accionPedirFamilia;
+    private ActionListener accionPedirTipos;
+
+    private JButton botonSeleccionarArchivo;
     private JPanel panel;
 
-    private File archivoPendiente; // Guardaremos aquí el archivo temporalmente hasta darle a guardar
+    private Archivo archivoGuardado;
+    private File archivo; // Guardaremos aquí el archivo temporalmente hasta darle a guardar
+
 
     public Ventana() {
 
         // 1. Configuración básica de la ventana
         setTitle("Gestor de Archivos Familiares");
-        setSize(800, 600);
+        setSize(700, 600);
+        // TODO DETECTAR CIERRE Y CERRAR CONEXIÓN EN LA BD
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Que el programa acabe al cerrar la X
         setLocationRelativeTo(null); // Centrar en la pantalla
 
@@ -30,81 +51,114 @@ public class Ventana extends JFrame {
     }
 
     public void setMenuPrincipal() {
-        // TODO setMenuPrincipal
+        // 1. Título
+        JLabel titulo = new JLabel("Gestor de Documentos", SwingConstants.CENTER);
+        titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        panel.add(titulo, BorderLayout.NORTH);
+
+        JPanel opciones = new JPanel(new GridLayout(4, 1, 0, 10));
+
+        // --- Fila 1 ---
+        JButton añadirArchivo = new JButton("Añadir Archivo");
+        añadirArchivo.addActionListener(e -> {
+            accionPedirFamilia.actionPerformed(e);
+            accionPedirTipos.actionPerformed(e);
+
+            if (familia != null && tipos != null) {
+                setMenuAñadirArchivo();
+            }
+        });
+        opciones.add(añadirArchivo);
+
+        // --- Fila 2 ---
+        JButton añadirFamiliar = new JButton("Añadir Familiar");
+        añadirArchivo.addActionListener(e -> setMenuAñadirFamiliar());
+        opciones.add(añadirFamiliar);
+
+        // --- Fila 3 ---
+        JButton añadirTipo = new JButton("Añadir Tipo");
+        añadirArchivo.addActionListener(e -> setMenuAñadirTipo());
+        opciones.add(añadirTipo);
+
+        // --- Fila 4 ---
+        JButton buscar = new JButton("Buscar Documentos");
+        // TODO añadirArchivo.addActionListener();
+        opciones.add(buscar);
+
+        panel.add(opciones);
     }
 
     public void setMenuAñadirTipo() {
         // TODO setMenuAñadirTipo
     }
 
-    public void setMenuAñadirPersona() {
-        // TODO setMenuAñadirPersona
+    public void setMenuAñadirFamiliar() {
+        // TODO setMenuAñadirFamiliar
     }
 
     public void setMenuAñadirArchivo() {
-        // 2. Título
+        // 1. Título
         JLabel titulo = new JLabel("Registrar Nuevo Documento", SwingConstants.CENTER);
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         panel.add(titulo, BorderLayout.NORTH);
 
-        // 3. EL FORMULARIO (Cuadrícula de 3 filas y 2 columnas)
-        JPanel panelFormulario = new JPanel(new GridLayout(3, 2, 10, 20));
+        // 2. EL FORMULARIO (Cuadrícula de 3 filas y 2 columnas)
+        JPanel panelFormulario = new JPanel(new GridLayout(4, 2, 10, 20));
 
         // --- FILA 1: Desplegable de Familiares ---
-        panelFormulario.add(new JLabel("Seleccionar Familiar:"));
-        // TODO Pedir datos de los familiares a la BD con un SELECT
-        String[] datosFamiliares = {"[12345678A] Pablo Pérez", "[11111111A] María García", "[22222222B] Andrés López"};
-        comboFamiliares = new JComboBox<>(datosFamiliares);
+        panelFormulario.add(new JLabel("Familiar:"));
+        comboFamiliares = new JComboBox<>(familia);
         panelFormulario.add(comboFamiliares);
 
         // --- FILA 2: Desplegable de Tipos de Archivo ---
         panelFormulario.add(new JLabel("Tipo de documento:"));
-        // TODO Pedir datos de los tipos a la BD con un SELECT
-        String[] tiposDisponibles = {"Analítica de Sangre", "Radiografía", "Ecografía", "Resonancia", "Receta Médica", "Otro..."};
-        comboTipos = new JComboBox<>(tiposDisponibles);
+        comboTipos = new JComboBox<>(tipos);
         panelFormulario.add(comboTipos);
 
-        // --- FILA 3: Tu botón de archivo ---
+        // --- FILA 3: Botón de Fecha
+        SpinnerDateModel modeloFecha = new SpinnerDateModel();
+        selectorFecha = new JSpinner(modeloFecha);
+
+        JSpinner.DateEditor editor = new JSpinner.DateEditor(selectorFecha, "dd/MM/yyyy");
+        selectorFecha.setEditor(editor);
+
+        panelFormulario.add(new JLabel("Fecha:"));
+        panelFormulario.add(selectorFecha);
+
+        // --- FILA 4: Tu botón de archivo ---
         panelFormulario.add(new JLabel("Documento:"));
+
+        botonSeleccionarArchivo = new JButton("📁 Buscar...");
+        botonSeleccionarArchivo.addActionListener(e -> seleccionarArchivo());
         
-        JPanel panelArchivo = new JPanel(new BorderLayout(10, 0));
-        JButton btnSeleccionarArchivo = new JButton("📁 Buscar...");
-        lblRutaSeleccionada = new JLabel("Ningún archivo");
-        lblRutaSeleccionada.setForeground(Color.GRAY);
-        
-        btnSeleccionarArchivo.addActionListener(e -> seleccionarArchivo());
-        
-        panelArchivo.add(btnSeleccionarArchivo, BorderLayout.WEST);
-        panelArchivo.add(lblRutaSeleccionada, BorderLayout.CENTER);
-        panelFormulario.add(panelArchivo);
+        panelFormulario.add(botonSeleccionarArchivo);
 
         panel.add(panelFormulario, BorderLayout.CENTER);
 
-        // 4. BOTÓN FINAL DE GUARDAR
-        JButton btnGuardar = new JButton("Guardar en Base de Datos");
-        btnGuardar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnGuardar.setBackground(new Color(40, 150, 80)); // Un tono verde oscuro
-        btnGuardar.setForeground(Color.WHITE);
+        // 3. BOTÓN FINAL DE GUARDAR
+        JButton botonGuardar = new JButton("Guardar en Base de Datos");
+        botonGuardar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        botonGuardar.setBackground(new Color(40, 150, 80)); // Un tono verde oscuro
+        botonGuardar.setForeground(Color.WHITE);
         
-        btnGuardar.addActionListener(e -> guardarArchivo());
-        
-        panel.add(btnGuardar, BorderLayout.SOUTH);
-    }
+        botonGuardar.addActionListener(e -> {
+            guardarArchivo();
 
-    private void seleccionarArchivo(){
-        String ruta = abrirExploradorDeArchivos();
-        System.out.println("Ruta del archivo seleccionado " + ruta);
-        if (ruta != null){
-            archivoPendiente = new File(ruta);
-        }
+            accionGuardarArchivo.actionPerformed(e);
+            
+            JOptionPane.showMessageDialog(this, "Datos guardados con éxito.", "Correcto", JOptionPane.INFORMATION_MESSAGE);
+            // Limpiamos el formulario para el siguiente
+            archivo = null;
+            botonSeleccionarArchivo.setText("📁 Buscar...");
+        });
+        
+        panel.add(botonGuardar, BorderLayout.SOUTH);
     }
 
      /**
      * Método que abre el explorador de archivos y extrae la ruta del documento.
      */
-    private String abrirExploradorDeArchivos() {
-        String rutaAbsoluta = null;
-
+    private void seleccionarArchivo() {
         // Usamos la ventana nativa de Windows en modo "Cargar" (LOAD)
         FileDialog explorador = new FileDialog(this, "Buscar Análisis", FileDialog.LOAD);
         
@@ -113,44 +167,66 @@ public class Ventana extends JFrame {
 
         // Extraemos la información por separado
         String carpeta = explorador.getDirectory();
-        String archivo = explorador.getFile();
+        String fichero = explorador.getFile();
 
         // Si no son null, significa que el usuario seleccionó algo y le dio a "Abrir"
-        if (carpeta != null && archivo != null) {
+        if (carpeta != null && fichero != null) {
             // Concatenamos la carpeta y el archivo para tener la ruta total
-            rutaAbsoluta = carpeta + archivo;
+            archivo = new File(carpeta + fichero);
             
-            lblRutaSeleccionada.setText(rutaAbsoluta);
-            lblRutaSeleccionada.setForeground(Color.WHITE);
+            botonSeleccionarArchivo.setText(fichero);   // CHECK
         }
-
-        return rutaAbsoluta;
     }
 
     private void guardarArchivo(){
-        if (archivoPendiente == null) {
+        if (archivo == null) {
             JOptionPane.showMessageDialog(this, "Seleccione un archivo primero.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        String familiarSeleccionado = (String) comboFamiliares.getSelectedItem();
-        String tipoSeleccionado = (String) comboTipos.getSelectedItem();
+        String dni = Familiar.fromString((String) comboFamiliares.getSelectedItem()).dni();
+        String tipo = (String) comboTipos.getSelectedItem();
+        Date date_fecha = (Date) selectorFecha.getValue();
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+        String fecha = formato.format(date_fecha);
 
-        // Extraeríamos el DNI cortando el texto (ej: "[12345678A] Pablo" -> "12345678A")
-        String dniCortado = familiarSeleccionado.substring(1, familiarSeleccionado.indexOf("]"));
+        archivoGuardado = new Archivo(archivo.getName(), tipo, archivo.getAbsolutePath(), fecha, dni);
 
-        System.out.println("--- LISTO PARA INSERTAR ---");
-        System.out.println("DNI: " + dniCortado);
-        System.out.println("Tipo: " + tipoSeleccionado);
-        System.out.println("Archivo original: " + archivoPendiente.getAbsolutePath());
-        
-        // TODO ¡Aquí iría la lógica de Files.move y tu PreparedStatement!
-        
-        JOptionPane.showMessageDialog(this, "Análisis guardado con éxito.", "Correcto", JOptionPane.INFORMATION_MESSAGE);
-        
-        // Limpiamos el formulario para el siguiente
-        archivoPendiente = null;
-        lblRutaSeleccionada.setText("Ningún archivo");
-        lblRutaSeleccionada.setForeground(Color.GRAY);
+        System.out.println("Archvo listo para guardar: " + archivoGuardado);    // DEBUG
+    }
+
+    // GETTERS DE variables
+    public Archivo getArchivoGuardo() {
+        return archivoGuardado;
+    }
+
+    // SETTERS DE variables
+    public void setFamilia(String[] familia) {
+        this.familia = familia;
+    }
+
+    public void setTipos(String[] tipos) {
+        this.tipos = tipos;
+    }
+
+    // SETTERS DE ACCIONES
+    public void setAccionGuardarArchivo(ActionListener accion) {
+        accionGuardarArchivo = accion;
+    }
+
+    public void setAccionGuardarFamiliar(ActionListener accion) {
+        accionGuardarFamiliar = accion;
+    }
+
+    public void setAccionGuardarTipo(ActionListener accion) {
+        accionGuardarTipo = accion;
+    }
+
+    public void setAccionPedirTipos(ActionListener accion) {
+        accionPedirTipos = accion;
+    }
+
+    public void setAccionPedirFamilia(ActionListener accion) {
+        accionPedirFamilia = accion;
     }
 }
