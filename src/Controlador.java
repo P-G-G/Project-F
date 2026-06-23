@@ -51,7 +51,7 @@ public class Controlador {
         Archivo archivo = ui.getArchivoGuardado();
 
         try {
-            if (gestor.insertarArchivo(archivo)) {
+            if (gestor.insertarArchivo(archivo)) {  // BUG puede ser el mismo archivo pero con distinto nombre
                 System.out.println("Archivo guardado con éxito");
             }
         } catch (SQLException e) {
