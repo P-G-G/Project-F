@@ -56,11 +56,11 @@ public class BD {
                             + ");";
 
         createTables[2] = "CREATE TABLE IF NOT EXISTS " + TABLA_ARCHIVOS + " ("
-                            + "nombre TEXT PRIMARY KEY,"
+                            + "nombre TEXT NOT NULL,"
                             + "tipo TEXT,"
-                            + "ruta TEXT NOT NULL,"
+                            + "ruta TEXT PRIMARY KEY,"
                             + "fecha TEXT NULL,"
-                            + "familiar_dni TEXT,"
+                            + "familiar TEXT,"
                             + "FOREIGN KEY (tipo) REFERENCES tipos(nombre),"
                             + "FOREIGN KEY (familiar_dni) REFERENCES familiares(dni)"
                             + ");";

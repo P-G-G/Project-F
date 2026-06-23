@@ -8,6 +8,7 @@ import DataBase.Familiar;
 
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -132,6 +133,15 @@ public class Ventana extends JFrame {
         return botonBorrar;
     }
 
+    private JButton crearBotonVolver() {
+        JButton botonVolver = new JButton("Volver");
+        botonVolver.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        botonVolver.setBackground(new Color(150, 150, 150)); // CHANGE a gris?
+        botonVolver.setForeground(Color.WHITE);
+
+        return botonVolver;
+    }
+
     private JButton crearBotonGuardar() {
         JButton botonGuardar = new JButton("Guardar en Base de Datos");
         botonGuardar.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -193,7 +203,14 @@ public class Ventana extends JFrame {
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         panel.add(titulo, BorderLayout.NORTH);
 
+        JPanel panelTipo = new JPanel(new GridLayout(2, 1));
+
+        JLabel labelTipo = new JLabel("Tipo nuevo de documento");
         JTextField txtTipo = new JTextField();
+
+        panelTipo.add(labelTipo);
+        panelTipo.add(txtTipo);
+
         JButton botonGuardar = crearBotonGuardar();
         botonGuardar.addActionListener(e -> {
             String tipo = txtTipo.getText();
@@ -206,10 +223,19 @@ public class Ventana extends JFrame {
             txtTipo.setText(null);
         });
 
-        JPanel panelCentral = new JPanel(new GridBagLayout());
-        panelCentral.add(txtTipo);
+        JButton botonVolver = crearBotonVolver();
+        botonVolver.addActionListener(e -> {
+            gestor.show(contenedor, MENU_PRINCIPAL);
+        });
 
-        panel.add(panelCentral);
+        JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelSuperior.add(botonVolver);
+
+        JPanel panelCentral = new JPanel(new GridBagLayout());
+        panelCentral.add(panelTipo);
+
+        panel.add(panelSuperior, BorderLayout.NORTH);
+        panel.add(panelCentral, BorderLayout.CENTER);
         panel.add(botonGuardar, BorderLayout.SOUTH);
 
         return panel;
@@ -354,7 +380,7 @@ public class Ventana extends JFrame {
 
         archivoGuardado = new Archivo(archivo.getName(), tipo, rutaArchivo, fecha, dni);
 
-        System.out.println("Archvo listo para guardar: " + archivoGuardado);    // DEBUG
+        System.out.println("Archivo listo para guardar: " + archivoGuardado);    // DEBUG
     }
 
     // GETTERS DE variables

@@ -35,11 +35,12 @@ public class GestorBD {
     }
 
     public boolean insertarArchivo(Archivo archivo) throws SQLException {
-        bd.ejecutarSinConfirmarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + " (nombre, tipo, ruta, fecha, familiar_dni) VALUES (?, ?, ?, ?, ?);",
+        Path archivoRuta = Path.of(archivo.ruta());
+        bd.ejecutarSinConfirmarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + " (nombre, tipo, ruta, fecha, familiar) VALUES (?, ?, ?, ?, ?);",
                      archivo.toArray());
         try {
             // Movemos el archivo
-            Files.move(Path.of(archivo.ruta()), documentos.toPath().resolve(archivo.nombre()));
+            Files.move(archivoRuta, documentos.toPath().resolve(archivo.nombre()));
             System.out.println("Fichero movido con éxito");
             bd.confirmarSQL();
             return true;
