@@ -1,3 +1,7 @@
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 
 import DataBase.Archivo;
@@ -41,15 +45,15 @@ public class Controlador {
             System.err.println("Error al intentar guardar el tipo en la base de datos");
             System.err.println(e.getMessage());
         }
-        
-        // TODO crear subcarpeta con nombre del tipo
     }
 
     public void guardarArchivo() {
         Archivo archivo = ui.getArchivoGuardado();
-        // TODO Mover archivo
+
         try {
-            gestor.insertarArchivo(archivo);
+            if (gestor.insertarArchivo(archivo)) {
+                System.out.println("Archivo guardado con éxito");
+            }
         } catch (SQLException e) {
             System.err.println("Error al intentar guardar el archivo en la base de datos");
             System.err.println(e.getMessage());

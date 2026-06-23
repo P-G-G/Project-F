@@ -87,6 +87,27 @@ public class BD {
         }
     }
 
+    public void ejecutarSinConfirmarSQL(String sql, Object... parametros) throws SQLException {
+        try (PreparedStatement statement = conexion.prepareStatement(sql)) {
+                
+            // Recorre cada parámetro y lo inyecta en su '?' correspondiente
+            for (int i = 0; i < parametros.length; i++) {
+                // Usamos setObject para que Java decida automáticamente si es String, int, etc.
+                statement.setObject(i + 1, parametros[i]); 
+            }
+            
+            statement.executeUpdate();
+        }
+    }
+
+    public void confirmarSQL() throws SQLException {
+        conexion.commit();
+    }
+
+    public void deshacerSQL() throws SQLException {
+        conexion.rollback();
+    }
+
     /**
      * Ejecuta sentencias SQL DDL en un mismo statement
      * @param sentencias Las sentencias SQL a ejecutar sin parámetros.

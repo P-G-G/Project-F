@@ -352,7 +352,7 @@ public class Ventana extends JFrame {
         String fecha = formato.format(date);
         File archivo = new File(rutaArchivo);
 
-        archivoGuardado = new Archivo(archivo.getName(), tipo, archivo.getAbsolutePath(), fecha, dni);
+        archivoGuardado = new Archivo(archivo.getName(), tipo, rutaArchivo, fecha, dni);
 
         System.out.println("Archvo listo para guardar: " + archivoGuardado);    // DEBUG
     }

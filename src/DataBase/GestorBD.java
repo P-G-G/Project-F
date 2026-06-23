@@ -1,27 +1,57 @@
 package DataBase;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 
 public class GestorBD {
+
+    private final static String NOMBRE_CARPETA_DOCUMENTOS = "Documentos";
+    private File documentos;
+
     private final BD bd;
 
     public GestorBD() {
         bd = new BD();
+
+        documentos = new File(NOMBRE_CARPETA_DOCUMENTOS);
+
+        // 2. Crear la carpeta si no existe
+        if (!documentos.exists()) {
+            // mkdirs() crea la carpeta
+            if (documentos.mkdir()) {
+                System.out.println("Carpeta '" + NOMBRE_CARPETA_DOCUMENTOS + "' creada con éxito en el proyecto.");
+            }
+        }
     }
 
-    public void insertarFamiliar(Familiar familiar) throws SQLTimeoutException, SQLException {
+    public void insertarFamiliar(Familiar familiar) throws SQLException {
         bd.ejecutarSQL("INSERT INTO " + BD.TABLA_FAMILIA + " (dni, nombre) VALUES (?, ?);", 
                         familiar.toArray());
         System.out.println("Familiar registrado con éxito.");
     }
 
-    public void insertarArchivo(Archivo archivo) throws SQLTimeoutException, SQLException {
-        bd.ejecutarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + " (nombre, tipo, ruta, fecha, familiar_dni) VALUES (?, ?, ?, ?, ?);",
+    public boolean insertarArchivo(Archivo archivo) throws SQLException {
+        bd.ejecutarSinConfirmarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + " (nombre, tipo, ruta, fecha, familiar_dni) VALUES (?, ?, ?, ?, ?);",
                      archivo.toArray());
+        try {
+            // Movemos el archivo
+            Files.move(Path.of(archivo.ruta()), documentos.toPath().resolve(archivo.nombre()));
+            System.out.println("Fichero movido con éxito");
+            bd.confirmarSQL();
+            return true;
+        } catch (IOException e) {
+            System.err.println("Error al mover el archivo al proyecto");
+            System.err.println(e.getMessage());
+            bd.deshacerSQL();
+            return false;
+        }
     }
 
-    public void insertarTipo(String tipo) throws SQLTimeoutException, SQLException {
+    public void insertarTipo(String tipo) throws SQLException {
         bd.ejecutarSQL("INSERT INTO " + BD.TABLA_TIPOS + " (nombre) VALUES (?);", tipo);
         System.out.println("Tipo registrado con éxito.");
     }
