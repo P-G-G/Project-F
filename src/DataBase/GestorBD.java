@@ -17,7 +17,7 @@ public class GestorBD {
     }
 
     public void insertarArchivo(Archivo archivo) throws SQLTimeoutException, SQLException {
-        bd.ejecutarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + " (nombre, tipo, ruta, fecha, familiar) VALUES (?, ?, ?, ?, ?);",
+        bd.ejecutarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + " (nombre, tipo, ruta, fecha, familiar_dni) VALUES (?, ?, ?, ?, ?);",
                      archivo.toArray());
     }
 
@@ -34,20 +34,6 @@ public class GestorBD {
                     .toArray(new Familiar[0]);
         } catch (SQLException e) {
             System.err.println("Error al intentar seleccionar a todos los familiares");
-        }
-
-        return familia;
-    }
-
-    public String[] getFamiliaString() {
-        String[] familia = null;
-        try {
-            familia = bd.seleccionarSQL("SELECT * FROM " + BD.TABLA_FAMILIA,
-                    rs -> "[" + rs.getString("dni") + "] " + rs.getString("nombre"))
-                    .toArray(new String[0]);
-        } catch (SQLException e) {
-            System.err.println("Error al intentar seleccionar a todos los familiares en String");
-            System.err.println(e.getMessage());
         }
 
         return familia;

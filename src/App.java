@@ -21,7 +21,6 @@ public class App {
 
             // Creamos y mostramos la ventana
             Ventana ventana = new Ventana();
-            ventana.setMenuPrincipal();
             
             new Controlador(gestor, ventana);
 
