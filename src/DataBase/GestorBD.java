@@ -5,18 +5,24 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
+import java.text.SimpleDateFormat;
+
+import Utils.Utils;
 
 public class GestorBD {
 
     private final static String NOMBRE_CARPETA_DOCUMENTOS = "Documentos";
     private File documentos;
 
+    
+    private SimpleDateFormat formatoFecha;
+
     private final BD bd;
 
     public GestorBD() {
         bd = new BD();
 
+        // *** Carpeta documentos ***
         documentos = new File(NOMBRE_CARPETA_DOCUMENTOS);
 
         // 2. Crear la carpeta si no existe
@@ -26,6 +32,9 @@ public class GestorBD {
                 System.out.println("Carpeta '" + NOMBRE_CARPETA_DOCUMENTOS + "' creada con éxito en el proyecto.");
             }
         }
+
+        // *** Formato de las fechas ***
+        formatoFecha = new SimpleDateFormat("yyyy-MM-dd");
     }
 
     public void insertarFamiliar(Familiar familiar) throws SQLException {
@@ -35,18 +44,27 @@ public class GestorBD {
     }
 
     public boolean insertarArchivo(Archivo archivo) throws SQLException {
-        Path archivoRuta = Path.of(archivo.ruta());
-        bd.ejecutarSinConfirmarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + " (nombre, tipo, ruta, fecha, familiar) VALUES (?, ?, ?, ?, ?);",
-                     archivo.toArray());
+        Path archivoRuta = archivo.info().toPath();
+        String archivoNombre = archivo.info().getName();
+        String fecha = formatoFecha.format(archivo.fecha());
+        String hash = Utils.calcularHash(archivoRuta);
+
+        Path archivoRutaNueva = documentos.toPath().resolve(archivoNombre);
+
+        bd.ejecutarSinConfirmarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + 
+        " (nombre, tipo, ruta, hash, fecha, familiar) VALUES (?, ?, ?, ?, ?, ?);",
+                    archivoNombre, archivo.tipo(), archivoRutaNueva.toString(), 
+                    hash, fecha, archivo.familiar().dni());
         try {
             // Movemos el archivo
-            Files.move(archivoRuta, documentos.toPath().resolve(archivo.nombre()));
+            Files.move(archivoRuta, archivoRutaNueva);
             System.out.println("Fichero movido con éxito");
             bd.confirmarSQL();
             return true;
         } catch (IOException e) {
             System.err.println("Error al mover el archivo al proyecto");
             System.err.println(e.getMessage());
+            System.out.println("Deshaciendo operación en la base de datos");
             bd.deshacerSQL();
             return false;
         }

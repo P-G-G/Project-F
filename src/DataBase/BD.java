@@ -27,14 +27,13 @@ public class BD {
             System.out.println("Se ha establecido conexión con la base de datos");
             conexion.setAutoCommit(false);
 
-            System.out.println("Creando tablas..."); // DEBUG
             String[] createTables = getCreateTables();
 
-            System.out.println("Ejecutando sentencias..."); // DEBUG
             if(!ejecutarSQL(createTables)){
                 System.err.println("Error ejecutando las sentencias para inicializar la base de datos");
                 System.exit(1); // CHECK
             }
+
             System.out.println("Se ha terminado de preparar la base de datos");
         } catch (Exception e) {
             System.err.println(
@@ -58,11 +57,12 @@ public class BD {
         createTables[2] = "CREATE TABLE IF NOT EXISTS " + TABLA_ARCHIVOS + " ("
                             + "nombre TEXT NOT NULL,"
                             + "tipo TEXT,"
-                            + "ruta TEXT PRIMARY KEY,"
-                            + "fecha TEXT NULL,"
+                            + "ruta TEXT NOT NULL,"
+                            + "hash TEXT PRIMARY KEY,"
+                            + "fecha TEXT NOT NULL,"    // CHECK hacer que fecha sea obligatoria?
                             + "familiar TEXT,"
                             + "FOREIGN KEY (tipo) REFERENCES tipos(nombre),"
-                            + "FOREIGN KEY (familiar_dni) REFERENCES familiares(dni)"
+                            + "FOREIGN KEY (familiar) REFERENCES familiares(dni)"
                             + ");";
 
         return createTables;

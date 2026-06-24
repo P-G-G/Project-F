@@ -8,8 +8,6 @@ import DataBase.Familiar;
 
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Ventana extends JFrame {
@@ -23,6 +21,8 @@ public class Ventana extends JFrame {
     public static String MENU_BORRAR_ARCHIVO = "MENU_BORRAR_ARCHIVO";
     public static String MENU_BORRAR_FAMILIAR = "MENU_BORRAR_FAMILIAR";
     public static String MENU_BORRAR_TIPO = "MENU_BORRAR_TIPO";
+
+    private static String DEFAULT_TEXT_BUTTON_SEARCH = "📁 Buscar...";
 
     // 1. El gestor de los menus
     public CardLayout gestor;
@@ -53,9 +53,11 @@ public class Ventana extends JFrame {
     // private Familiar[] familia;
     // private String[] tipos;
 
-    JComboBox<Familiar> desplegableFamilia;
-    JComboBox<String> desplegableTipos;
+    // Botones
+    private JComboBox<Familiar> desplegableFamilia;
+    private JComboBox<String> desplegableTipos;
 
+    // Variables para guardar
     private Familiar familiarGuardado;
     private String tipoGuardado;
     private Archivo archivoGuardado;
@@ -79,15 +81,15 @@ public class Ventana extends JFrame {
         desplegableTipos = new JComboBox<String>();
 
         // Inicializamos todos los menus
-        menuPrincipal = getMenuPrincipal();
+        setMenuPrincipal();
 
-        menuAñadirArchivo = getMenuAñadirArchivo();
-        menuAñadirFamiliar = getMenuAñadirFamiliar();
-        menuAñadirTipo = getMenuAñadirTipo();
+        setMenuAñadirArchivo();
+        setMenuAñadirFamiliar();
+        setMenuAñadirTipo();
 
-        menuBorrarArchivo = getMenuBorrarArchivo();
-        menuBorrarTipo = getMenuBorrarTipo();
-        menuBorrarFamiliar = getMenuBorrarFamiliar();
+        setMenuBorrarArchivo();
+        setMenuBorrarTipo();
+        setMenuBorrarFamiliar();
 
         // Añadimos todos los menus
         contenedor.add(menuPrincipal, MENU_PRINCIPAL);
@@ -106,28 +108,10 @@ public class Ventana extends JFrame {
         gestor.show(contenedor, MENU_PRINCIPAL);
     }
 
-    private JPanel getMenuBorrarFamiliar() {
-        JPanel panel = new JPanel();
-        // TODO getMenuBorrarFamiliar
-        return panel;
-    }
-
-    private JPanel getMenuBorrarTipo() {
-        JPanel panel = new JPanel();
-        // TODO getMenuBorrarTipo
-        return panel;
-    }
-
-    private JPanel getMenuBorrarArchivo() {
-        JPanel panel = new JPanel();
-        // TODO getMenuBorrarArchivo
-        return panel;
-    }
-
     private JButton crearBotonBorrar() {
         JButton botonBorrar = new JButton("Borrar de la Base de Datos");
         botonBorrar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        botonBorrar.setBackground(new Color(150, 40, 80)); // CHANGE a rojo oscuro
+        botonBorrar.setBackground(new Color(150, 40, 80));
         botonBorrar.setForeground(Color.WHITE);
 
         return botonBorrar;
@@ -136,8 +120,12 @@ public class Ventana extends JFrame {
     private JButton crearBotonVolver() {
         JButton botonVolver = new JButton("Volver");
         botonVolver.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        botonVolver.setBackground(new Color(150, 150, 150)); // CHANGE a gris?
+        botonVolver.setBackground(new Color(150, 150, 150));
         botonVolver.setForeground(Color.WHITE);
+
+        botonVolver.addActionListener(e -> {
+            gestor.show(contenedor, MENU_PRINCIPAL);
+        });
 
         return botonVolver;
     }
@@ -151,13 +139,13 @@ public class Ventana extends JFrame {
         return botonGuardar;
     }
 
-    public JPanel getMenuPrincipal() {
-        JPanel panel = new JPanel(new BorderLayout(0, 20));
+    public void setMenuPrincipal() {
+        menuPrincipal = new JPanel(new BorderLayout(0, 20));
 
         // 1. Título
         JLabel titulo = new JLabel("Gestor de Documentos", SwingConstants.CENTER);
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        panel.add(titulo, BorderLayout.NORTH);
+        menuPrincipal.add(titulo, BorderLayout.NORTH);
 
         JPanel opciones = new JPanel(new GridLayout(4, 1, 0, 10));
 
@@ -192,16 +180,20 @@ public class Ventana extends JFrame {
         JPanel panelCentral = new JPanel(new GridBagLayout());
         panelCentral.add(opciones);
 
-        panel.add(panelCentral, BorderLayout.CENTER);
-        return panel;
+        menuPrincipal.add(panelCentral, BorderLayout.CENTER);
     }
 
-    public JPanel getMenuAñadirTipo() {
-        JPanel panel = new JPanel(new BorderLayout());
+    public void setMenuAñadirTipo() {
+        menuAñadirTipo = new JPanel(new BorderLayout());
         
+        JPanel panelSuperior = new JPanel(new BorderLayout());
+        JPanel panelCentral = new JPanel(new GridBagLayout());
+
         JLabel titulo = new JLabel("Registrar Nuevo Tipo de Documento", SwingConstants.CENTER);
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        panel.add(titulo, BorderLayout.NORTH);
+
+        panelSuperior.add(titulo, BorderLayout.CENTER);
+        panelSuperior.add(crearBotonVolver(), BorderLayout.WEST);
 
         JPanel panelTipo = new JPanel(new GridLayout(2, 1));
 
@@ -223,30 +215,24 @@ public class Ventana extends JFrame {
             txtTipo.setText(null);
         });
 
-        JButton botonVolver = crearBotonVolver();
-        botonVolver.addActionListener(e -> {
-            gestor.show(contenedor, MENU_PRINCIPAL);
-        });
-
-        JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelSuperior.add(botonVolver);
-
-        JPanel panelCentral = new JPanel(new GridBagLayout());
         panelCentral.add(panelTipo);
 
-        panel.add(panelSuperior, BorderLayout.NORTH);
-        panel.add(panelCentral, BorderLayout.CENTER);
-        panel.add(botonGuardar, BorderLayout.SOUTH);
-
-        return panel;
+        menuAñadirTipo.add(panelSuperior, BorderLayout.NORTH);
+        menuAñadirTipo.add(panelCentral, BorderLayout.CENTER);
+        menuAñadirTipo.add(botonGuardar, BorderLayout.SOUTH);
     }
 
-    public JPanel getMenuAñadirFamiliar() {
-        JPanel panel = new JPanel(new BorderLayout());
+    public void setMenuAñadirFamiliar() {
+        menuAñadirFamiliar = new JPanel(new BorderLayout());
+
+        JPanel panelSuperior = new JPanel(new BorderLayout());
+        JPanel panelCentral = new JPanel(new GridBagLayout());
 
         JLabel titulo = new JLabel("Registrar Nuevo Familiar", SwingConstants.CENTER);
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        panel.add(titulo, BorderLayout.NORTH);
+
+        panelSuperior.add(titulo, BorderLayout.CENTER);
+        panelSuperior.add(crearBotonVolver(), BorderLayout.WEST);
 
         JPanel panelTextos = new JPanel(new GridLayout(2, 2));
 
@@ -273,23 +259,25 @@ public class Ventana extends JFrame {
         panelTextos.add(txtDni);
         panelTextos.add(txtNombre);
 
-        JPanel panelCentral = new JPanel(new GridBagLayout());
         panelCentral.add(panelTextos);
 
-        panel.add(panelCentral, BorderLayout.CENTER);
-        
-        panel.add(botonGuardar, BorderLayout.SOUTH);
-
-        return panel;
+        menuAñadirFamiliar.add(panelSuperior, BorderLayout.NORTH);
+        menuAñadirFamiliar.add(panelCentral, BorderLayout.CENTER);
+        menuAñadirFamiliar.add(botonGuardar, BorderLayout.SOUTH);
     }
 
-    public JPanel getMenuAñadirArchivo() {
-        JPanel panel = new JPanel(new BorderLayout());
+    public void setMenuAñadirArchivo() {
+        menuAñadirArchivo = new JPanel(new BorderLayout());
+
+        JPanel panelSuperior = new JPanel(new BorderLayout());
+        JPanel panelCentral = new JPanel(new GridBagLayout());
 
         // 1. Título
         JLabel titulo = new JLabel("Registrar Nuevo Documento", SwingConstants.CENTER);
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        panel.add(titulo, BorderLayout.NORTH);
+
+        panelSuperior.add(titulo, BorderLayout.CENTER);
+        panelSuperior.add(crearBotonVolver(), BorderLayout.WEST);
 
         // 2. EL FORMULARIO (Cuadrícula de 3 filas y 2 columnas)
         JPanel panelFormulario = new JPanel(new GridLayout(4, 2, 10, 20));
@@ -303,8 +291,7 @@ public class Ventana extends JFrame {
         panelFormulario.add(desplegableTipos);
 
         // --- FILA 3: Botón de Fecha
-        SpinnerDateModel modeloFecha = new SpinnerDateModel();
-        JSpinner selectorFecha = new JSpinner(modeloFecha);
+        JSpinner selectorFecha = new JSpinner(new SpinnerDateModel());
 
         JSpinner.DateEditor editor = new JSpinner.DateEditor(selectorFecha, "dd/MM/yyyy");
         selectorFecha.setEditor(editor);
@@ -315,15 +302,11 @@ public class Ventana extends JFrame {
         // --- FILA 4: Tu botón de archivo ---
         panelFormulario.add(new JLabel("Documento:"));
 
-        JButton botonSeleccionarArchivo = new JButton("📁 Buscar...");
+        JButton botonSeleccionarArchivo = new JButton(DEFAULT_TEXT_BUTTON_SEARCH);
         botonSeleccionarArchivo.addActionListener(e -> seleccionarArchivo(botonSeleccionarArchivo));
         
         panelFormulario.add(botonSeleccionarArchivo);
-
-        JPanel panelCentral = new JPanel(new GridBagLayout());
         panelCentral.add(panelFormulario);
-
-        panel.add(panelCentral, BorderLayout.CENTER);
 
         // 3. BOTÓN FINAL DE GUARDAR
         JButton botonGuardar = crearBotonGuardar();
@@ -332,25 +315,40 @@ public class Ventana extends JFrame {
             String rutaArchivo = botonSeleccionarArchivo.getText();
             Familiar familiar = (Familiar) desplegableFamilia.getSelectedItem();
             String tipo = (String) desplegableTipos.getSelectedItem();
-            if (familiar != null && tipo != null && rutaArchivo != null) {
-                guardarArchivo(familiar, 
-                                tipo, 
-                                (Date) selectorFecha.getValue(), 
-                                rutaArchivo);
+            Date fecha = (Date) selectorFecha.getValue();
+
+            if (familiar != null && tipo != null && rutaArchivo != DEFAULT_TEXT_BUTTON_SEARCH) {
+                System.out.println(rutaArchivo);
+                archivoGuardado = new Archivo(new File(rutaArchivo), tipo, fecha, familiar);
 
                 accionGuardarArchivo.actionPerformed(e);
             }
             
             // Limpiamos el formulario para el siguiente
-            botonSeleccionarArchivo.setText("📁 Buscar...");
+            botonSeleccionarArchivo.setText(DEFAULT_TEXT_BUTTON_SEARCH);
         });
         
-        panel.add(botonGuardar, BorderLayout.SOUTH);
-
-        return panel;
+        menuAñadirArchivo.add(panelSuperior, BorderLayout.NORTH);
+        menuAñadirArchivo.add(panelCentral, BorderLayout.CENTER);
+        menuAñadirArchivo.add(botonGuardar, BorderLayout.SOUTH);
     }
 
-     /**
+    private void setMenuBorrarFamiliar() {
+        menuBorrarFamiliar = new JPanel();
+        // TODO getMenuBorrarFamiliar
+    }
+
+    private void setMenuBorrarTipo() {
+        menuBorrarTipo = new JPanel();
+        // TODO getMenuBorrarTipo
+    }
+
+    private void setMenuBorrarArchivo() {
+        menuBorrarArchivo = new JPanel();
+        // TODO getMenuBorrarArchivo
+    }
+     
+    /**
      * Método que abre el explorador de archivos y extrae la ruta del documento.
      */
     private void seleccionarArchivo(JButton botonSeleccionarArchivo) {
@@ -369,18 +367,6 @@ public class Ventana extends JFrame {
             // Concatenamos la carpeta y el archivo para tener la ruta total
             botonSeleccionarArchivo.setText(carpeta + fichero);
         }
-    }
-
-    private void guardarArchivo(Familiar familiar, String tipo, Date date, String rutaArchivo) {
-        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
-
-        String dni = familiar.dni();
-        String fecha = formato.format(date);
-        File archivo = new File(rutaArchivo);
-
-        archivoGuardado = new Archivo(archivo.getName(), tipo, rutaArchivo, fecha, dni);
-
-        System.out.println("Archivo listo para guardar: " + archivoGuardado);    // DEBUG
     }
 
     // GETTERS DE variables

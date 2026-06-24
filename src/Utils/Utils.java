@@ -1,3 +1,8 @@
+package Utils;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+
 public class Utils {
     public static void log(String mensaje) {
         // 1. Obtenemos el historial de llamadas actual
@@ -27,6 +32,35 @@ public class Utils {
         } else {
             // Por si acaso falla la lectura de la pila
             System.out.println("[DEBUG] -> " + mensaje);
+        }
+    }
+
+    public static String calcularHash(Path rutaArchivo) {
+        try {
+            // 1. Elegimos el algoritmo (SHA-256 es el más seguro y estándar actual)
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            
+            // 2. Leemos todo el contenido del archivo en bytes
+            byte[] bytesDelArchivo = Files.readAllBytes(rutaArchivo);
+            
+            // 3. Generamos la huella dactilar (en formato binario)
+            byte[] hashBinario = digest.digest(bytesDelArchivo);
+            
+            // 4. Lo convertimos a un texto hexadecimal (letras y números legibles)
+            StringBuilder textoHex = new StringBuilder();
+            for (byte b : hashBinario) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    textoHex.append('0');
+                }
+                textoHex.append(hex);
+            }
+            
+            return textoHex.toString();
+            
+        } catch (Exception e) {
+            System.err.println("Error al calcular el hash: " + e.getMessage());
+            return null;
         }
     }
 }
