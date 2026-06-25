@@ -1,5 +1,6 @@
 package DataBase;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -76,6 +77,7 @@ public class GestorBD {
 
     public void eliminarArchivo(Archivo archivo) throws SQLException {
         bd.ejecutarSQL("DELETE FROM " + BD.TABLA_ARCHIVOS + " WHERE hash = (?);", archivo.hash());
+        Desktop.getDesktop().moveToTrash(new File(archivo.ruta()));
     }
 
     public Familiar[] getFamilia() {

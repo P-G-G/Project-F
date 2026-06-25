@@ -67,4 +67,12 @@ public class Utils {
             return null;
         }
     }
+
+    public static void dormir(long milis) {
+        try {
+            Thread.sleep(milis); 
+        } catch (InterruptedException e) {
+            System.err.println("El hilo fue interrumpido: " + e.getMessage());
+        }
+    }
 }

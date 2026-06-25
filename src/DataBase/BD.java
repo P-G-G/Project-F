@@ -20,9 +20,10 @@ public class BD {
 
     private Connection conexion;
 
+    // TODO Hace un barrido de las carpetas y documentos que tiene para ver si está sincronizada?
     public BD() {
-        // Nos conectamos con la base de datos mediante SQLite
         try {
+            // Nos conectamos con la base de datos mediante SQLite
             this.conexion = DriverManager.getConnection(BD_URL);
             System.out.println("Se ha establecido conexión con la base de datos");
             conexion.setAutoCommit(false);

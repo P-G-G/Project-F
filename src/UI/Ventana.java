@@ -1,6 +1,7 @@
 package UI;
 
 import java.awt.*;
+
 import javax.swing.*;
 
 import DataBase.Archivo;
@@ -9,8 +10,11 @@ import Utils.Utils;
 
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+
 import java.util.Date;
+import java.util.List;
 
 public class Ventana extends JFrame {
 
@@ -24,7 +28,7 @@ public class Ventana extends JFrame {
     public static String MENU_BORRAR_FAMILIAR = "MENU_BORRAR_FAMILIAR";
     public static String MENU_BORRAR_TIPO = "MENU_BORRAR_TIPO";
 
-    public static String MENU_BUSCAR_ARCHIVO = "MENU_BUSCAR_ARCHIVO";
+    public static String MENU_ARCHIVOS = "MENU_ARCHIVOS";
 
     private static String DEFAULT_TEXT_BUTTON_SEARCH = "📁 Buscar...";
 
@@ -45,14 +49,14 @@ public class Ventana extends JFrame {
     private JPanel menuBorrarTipo;
     private JPanel menuBorrarFamiliar;
 
-    private JPanel menuBuscarArchivos;
+    private JPanel menuArchivos;
 
     // Acciones
     private ActionListener accionGuardarArchivo;
     private ActionListener accionGuardarFamiliar;
     private ActionListener accionGuardarTipo;
 
-    private ActionListener accionBorrarArchivo;
+    private ActionListener accionBorrarArchivos;
     private ActionListener accionBorrarFamiliar;
     private ActionListener accionBorrarTipo;
 
@@ -69,11 +73,13 @@ public class Ventana extends JFrame {
     private JComboBox<String> desplegableTipos;
     private JList<Archivo> listaArchivos;
 
-    // Variables para guardar
     private Familiar familiarGuardado;
     private String tipoGuardado;
     private Archivo archivoGuardado;
 
+    private Familiar familiarBorrado;
+    private String tipoBorrado;
+    private List<Archivo> archivosBorrados;   // CHECK
     
     SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -106,7 +112,7 @@ public class Ventana extends JFrame {
         setMenuBorrarTipo();
         setMenuBorrarFamiliar();
 
-        setMenuBuscarArchivos();
+        setMenuArchivos();
 
         // Añadimos todos los menus
         contenedor.add(menuPrincipal, MENU_PRINCIPAL);
@@ -119,7 +125,7 @@ public class Ventana extends JFrame {
         contenedor.add(menuBorrarTipo, MENU_BORRAR_TIPO);
         contenedor.add(menuBorrarFamiliar, MENU_BORRAR_FAMILIAR);
 
-        contenedor.add(menuBuscarArchivos, MENU_BUSCAR_ARCHIVO);
+        contenedor.add(menuArchivos, MENU_ARCHIVOS);
 
         this.add(contenedor);
 
@@ -181,7 +187,8 @@ public class Ventana extends JFrame {
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         menuPrincipal.add(titulo, BorderLayout.NORTH);
 
-        JPanel opciones = new JPanel(new GridLayout(4, 1, 0, 10));
+        JPanel opciones = new JPanel(new GridLayout(3, 1, 0, 10));
+        JPanel opcionesAñadirBorrar = new JPanel(new GridLayout(2, 2, 10, 10));
 
         // --- Fila 1 ---
         JButton añadirArchivo = new JButton("Añadir Archivo");
@@ -199,22 +206,43 @@ public class Ventana extends JFrame {
         // --- Fila 2 ---
         JButton añadirFamiliar = new JButton("Añadir Familiar");
         añadirFamiliar.addActionListener(e -> gestor.show(contenedor, MENU_AÑADIR_FAMILIAR));
-        opciones.add(añadirFamiliar);
+        opcionesAñadirBorrar.add(añadirFamiliar);
+
+        JButton borrarFamiliar = new JButton("Borrar Familiar");
+        borrarFamiliar.addActionListener(e -> {
+            accionPedirFamilia.actionPerformed(e);
+            if (familia != null)
+                gestor.show(contenedor, MENU_BORRAR_FAMILIAR);
+        });
+
+        opcionesAñadirBorrar.add(borrarFamiliar);
 
         // --- Fila 3 ---
         JButton añadirTipo = new JButton("Añadir Tipo");
         añadirTipo.addActionListener(e -> gestor.show(contenedor, MENU_AÑADIR_TIPO));
-        opciones.add(añadirTipo);
+        opcionesAñadirBorrar.add(añadirTipo);
+
+        JButton borrarTipo = new JButton("Borrar Tipo");
+        borrarTipo.addActionListener(e -> {
+            accionPedirTipos.actionPerformed(e);
+            if (tipos != null)
+                gestor.show(contenedor, MENU_BORRAR_TIPO);
+        });
+
+        opcionesAñadirBorrar.add(borrarTipo);
+
+        opciones.add(opcionesAñadirBorrar);
 
         // --- Fila 4 ---
-        JButton buscar = new JButton("Buscar Documentos");
+        JButton buscar = new JButton("Documentos");
         buscar.addActionListener(e -> {
             accionPedirArchivos.actionPerformed(e);
 
             if (archivos != null) {
-                gestor.show(contenedor, MENU_BUSCAR_ARCHIVO);
+                gestor.show(contenedor, MENU_ARCHIVOS);
             }
         });
+
         opciones.add(buscar);
 
         JPanel panelCentral = new JPanel(new GridBagLayout());
@@ -231,7 +259,7 @@ public class Ventana extends JFrame {
 
         JPanel panelTipo = new JPanel(new GridLayout(2, 1));
 
-        JLabel labelTipo = new JLabel("Tipo nuevo de documento");
+        JLabel labelTipo = new JLabel("Nombre del tipo");
         JTextField txtTipo = new JTextField();
 
         panelTipo.add(labelTipo);
@@ -241,7 +269,7 @@ public class Ventana extends JFrame {
         botonGuardar.addActionListener(e -> {
             String tipo = txtTipo.getText();
 
-            if (tipo != null) {
+            if (tipo != null && !tipo.isBlank()) {
                 tipoGuardado = tipo;
                 accionGuardarTipo.actionPerformed(e);
             }
@@ -272,7 +300,7 @@ public class Ventana extends JFrame {
             String dni = txtDni.getText();
             String nombre = txtNombre.getText();
 
-            if (dni != null && nombre != null) {
+            if (dni != null && nombre != null && !dni.isBlank() && !nombre.isBlank()) {
                 familiarGuardado = new Familiar(dni.trim(), nombre.trim());
                 accionGuardarFamiliar.actionPerformed(e);
             }
@@ -358,13 +386,49 @@ public class Ventana extends JFrame {
     }
 
     private void setMenuBorrarFamiliar() {
-        menuBorrarFamiliar = new JPanel();
-        // TODO getMenuBorrarFamiliar
+        menuBorrarFamiliar = new JPanel(new BorderLayout());
+        JPanel panelSuperior = crearPanelSuperior("Borrar Familiar");
+        JPanel panelCentral = new JPanel(new GridBagLayout());
+
+        JLabel labelBoton = new JLabel("Elegir familiar: ");
+        panelCentral.add(labelBoton);
+        panelCentral.add(desplegableFamilia);
+
+        JButton botonBorrar = crearBotonBorrar();
+        botonBorrar.addActionListener(e -> {
+            familiarBorrado = (Familiar) desplegableFamilia.getSelectedItem();
+
+            if (familiarBorrado != null) {
+                accionBorrarFamiliar.actionPerformed(e);
+            }
+        });
+
+        menuBorrarFamiliar.add(panelSuperior, BorderLayout.NORTH);
+        menuBorrarFamiliar.add(panelCentral, BorderLayout.CENTER);
+        menuBorrarFamiliar.add(botonBorrar, BorderLayout.SOUTH);
     }
 
-    private void setMenuBorrarTipo() {
-        menuBorrarTipo = new JPanel();
-        // TODO getMenuBorrarTipo
+    private void setMenuBorrarTipo () {
+        menuBorrarTipo = new JPanel(new BorderLayout());
+        JPanel panelSuperior = crearPanelSuperior("Borrar Tipo");
+        JPanel panelCentral = new JPanel(new GridBagLayout());
+
+        JLabel labelBoton = new JLabel("Elegir Tipo: ");
+        panelCentral.add(labelBoton);
+        panelCentral.add(desplegableTipos);
+
+        JButton botonBorrar = crearBotonBorrar();
+        botonBorrar.addActionListener(e -> {
+            tipoBorrado = (String) desplegableTipos.getSelectedItem();
+
+            if (tipoBorrado != null) {
+                accionBorrarTipo.actionPerformed(e);
+            }
+        });
+
+        menuBorrarTipo.add(panelSuperior, BorderLayout.NORTH);
+        menuBorrarTipo.add(panelCentral, BorderLayout.CENTER);
+        menuBorrarTipo.add(botonBorrar, BorderLayout.SOUTH);
     }
 
     private void setMenuBorrarArchivo() {
@@ -372,43 +436,46 @@ public class Ventana extends JFrame {
         // TODO getMenuBorrarArchivo
     }
      
-    private void setMenuBuscarArchivos() {  // CHECK IA
-        menuBuscarArchivos = new JPanel(new BorderLayout());
+    private void setMenuArchivos() {
+        menuArchivos = new JPanel(new BorderLayout());
 
         // --- PANEL SUPERIOR ---
-        menuBuscarArchivos.add(
-            crearPanelSuperior("Bucador de Documentos"), BorderLayout.NORTH);
+        menuArchivos.add(
+            crearPanelSuperior("Documentos"), BorderLayout.NORTH);
 
         // --- PANEL CENTRAL (La Lista) ---
-        listaArchivos.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-
-        // Le ponemos un scroll por si hay muchos archivos
         JScrollPane scroll = new JScrollPane(listaArchivos);
-        // Un poco de margen para que no toque los bordes
         scroll.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); 
-
-        menuBuscarArchivos.add(scroll, BorderLayout.CENTER);
+        listaArchivos.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        menuArchivos.add(scroll, BorderLayout.CENTER);
 
         // --- PANEL INFERIOR (El Botón de Abrir) ---
         JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
         JButton botonAbrirDocumento = new JButton("Abrir Documento Seleccionado");
         botonAbrirDocumento.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        // Lo empezamos apagado para que no le den si no han seleccionado nada
-        botonAbrirDocumento.setEnabled(false); 
-
+        botonAbrirDocumento.setEnabled(false); // Empieza pagado para que no le den si no han seleccionado nada
+        botonAbrirDocumento.addActionListener(e -> abrirArchivo(listaArchivos.getSelectedValue()));
+        
         // Hacemos que el botón se encienda solo cuando el usuario hace clic en un archivo
         listaArchivos.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {     // CHECK si funciona
+            if (!e.getValueIsAdjusting()) {
                 botonAbrirDocumento.setEnabled(listaArchivos.getSelectedIndex() != -1);
             }
         });
+        
+        JButton botonEliminarDocumento = crearBotonBorrar();
+        botonEliminarDocumento.addActionListener(e -> {
+            archivosBorrados = listaArchivos.getSelectedValuesList();
 
-        botonAbrirDocumento.addActionListener(e -> {
-            // TODO Abrir documento
+            if (!archivosBorrados.isEmpty()) {
+                accionBorrarArchivos.actionPerformed(e);
+            }
         });
 
         panelInferior.add(botonAbrirDocumento);
-        menuBuscarArchivos.add(panelInferior, BorderLayout.SOUTH);
+        panelInferior.add(botonEliminarDocumento);
+        menuArchivos.add(panelInferior, BorderLayout.SOUTH);
     }
     
     // Método que abre el explorador de archivos y extrae la ruta del documento.
@@ -430,17 +497,64 @@ public class Ventana extends JFrame {
         }
     }
 
+    private void abrirArchivo(Archivo archivoSeleccionado) {
+        try {
+
+            // Creamos el objeto File apuntando a la ruta del documento
+            File archivo = new File(archivoSeleccionado.ruta());
+
+            // Seguridad básica: Comprobar que el archivo realmente sigue ahí
+            if (!archivo.exists()) {
+                System.err.println("No se puede abrir: El archivo no existe en la ruta especificada.");
+                return;
+            }
+
+            // Le dice a Windows/Mac que abra el archivo
+            Desktop.getDesktop().open(archivo);
+
+            Utils.dormir(1000);
+        } catch (IOException e) {
+            System.err.println("Error del sistema al intentar abrir el archivo: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("La ruta del archivo está corrupta o no es válida: " + e.getMessage());
+        }
+    }
+
     // GETTERS DE variables
     public Archivo getArchivoGuardado() {
-        return archivoGuardado;
+        Archivo archivo = archivoGuardado;
+        archivoGuardado = null;
+        return archivo;
     }
 
     public Familiar getFamiliarGuardado() {
-        return familiarGuardado;
+        Familiar familiar = familiarGuardado;
+        familiarGuardado = null;
+        return familiar;
     }
 
     public String getTipoGuardado() {
-        return tipoGuardado;
+        String tipo = tipoGuardado;
+        tipoGuardado = null;
+        return tipo;
+    }
+
+    public List<Archivo> getArchivosBorrados() {
+        List<Archivo> archivos = archivosBorrados;
+        archivosBorrados = null;
+        return archivos;
+    }
+
+    public Familiar getFamiliarBorrado() {
+        Familiar familiar = familiarBorrado;
+        familiarBorrado = null;
+        return familiar;
+    }
+
+    public String getTipoBorrado() {
+        String tipo = tipoBorrado;
+        tipoBorrado = null;
+        return tipo;
     }
 
     // SETTERS DE VARIABLES
@@ -493,8 +607,8 @@ public class Ventana extends JFrame {
         accionPedirArchivos = accion;
     }
 
-    public void setAccionBorrarArchivo(ActionListener accion) {
-        accionBorrarArchivo = accion;
+    public void setAccionBorrarArchivos(ActionListener accion) {
+        accionBorrarArchivos = accion;
     }
 
     public void setAccionBorrarFamiliar(ActionListener accion) {

@@ -13,8 +13,6 @@ public class Controlador {
         this.gestor = gestor;
         this.ui = ui;
 
-        // TODO acciones de borrado
-
         ui.setAccionGuardarFamiliar(e -> guardarFamiliar());
         ui.setAccionGuardarTipo(e -> guardarTipo());
         ui.setAccionGuardarArchivo(e -> guardarArchivo());
@@ -25,22 +23,42 @@ public class Controlador {
 
         ui.setAccionBorrarFamiliar(e -> borrarFamiliar());
         ui.setAccionBorrarTipo(e -> borrarTipo());
-        ui.setAccionBorrarArchivo(e -> borrarArchivo());
+        ui.setAccionBorrarArchivos(e -> borrarArchivos());
     }
 
-    private Object borrarArchivo() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'borrarArchivo'");
+    private void borrarArchivos() {
+        for (Archivo archivo : ui.getArchivosBorrados()) {
+            try {
+                    gestor.eliminarArchivo(archivo);
+                    System.out.println("Archivo eliminado con éxito");
+            } catch (SQLException e) {
+                System.err.println("Error al intentar eliminar el archivo: " + e.getMessage());
+            }
+        }
+        
+        pedirArchivos();
     }
 
-    private Object borrarTipo() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'borrarTipo'");
+    private void borrarTipo() {
+        try {
+            gestor.eliminarTipo(ui.getTipoBorrado());
+            System.out.println("Tipo eliminado con éxito");
+        } catch (SQLException e) {
+            System.err.println("Error al intentar eliminar el tipo de archivo: " + e.getMessage());
+        }
+
+        pedirTipos();
     }
 
-    private Object borrarFamiliar() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'borrarFamiliar'");
+    private void borrarFamiliar() {
+        try {
+            gestor.eliminarFamiliar(ui.getFamiliarBorrado());
+            System.out.println("Familiar eliminado con éxito");
+        } catch (SQLException e) {
+            System.err.println("Error al intentar eliminar el familiar: " + e.getMessage());
+        }
+
+        pedirFamilia();
     }
 
     public void guardarFamiliar() {
