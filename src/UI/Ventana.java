@@ -71,8 +71,12 @@ public class Ventana extends JFrame {
     private String[] tipos;
     private Archivo[] archivos;
 
-    private JComboBox<Familiar> desplegableFamilia;
-    private JComboBox<String> desplegableTipos;
+    private JComboBox<Familiar> desplegableFamiliaAñadir;
+    private JComboBox<String> desplegableTiposAñadir;
+
+    private JComboBox<Familiar> desplegableFamiliaBorrar;
+    private JComboBox<String> desplegableTiposBorrar;
+
     private JList<Archivo> listaArchivos;
 
     private Familiar familiarGuardado;
@@ -81,7 +85,7 @@ public class Ventana extends JFrame {
 
     private Familiar familiarBorrado;
     private String tipoBorrado;
-    private List<Archivo> archivosBorrados;   // CHECK
+    private List<Archivo> archivosBorrados;
     
     SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -90,7 +94,6 @@ public class Ventana extends JFrame {
         // Configuración básica de la ventana
         setTitle("Gestor de Archivos Familiares");
         setSize(700, 600);
-        // TODO DETECTAR CIERRE Y CERRAR CONEXIÓN EN LA BD
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(null); // Centrar en la pantalla
 
@@ -99,8 +102,12 @@ public class Ventana extends JFrame {
         contenedor = new JPanel(gestor);
 
         // Botones
-        desplegableFamilia = new JComboBox<>();
-        desplegableTipos = new JComboBox<>();
+        desplegableFamiliaAñadir = new JComboBox<>();
+        desplegableTiposAñadir = new JComboBox<>();
+
+        desplegableFamiliaBorrar = new JComboBox<>();
+        desplegableTiposBorrar = new JComboBox<>();
+
         listaArchivos = new JList<>();
 
         // Inicializamos todos los menus
@@ -333,11 +340,11 @@ public class Ventana extends JFrame {
 
         // --- FILA 1: Desplegable de Familiares ---
         panelFormulario.add(new JLabel("Familiar:"));
-        panelFormulario.add(desplegableFamilia);
+        panelFormulario.add(desplegableFamiliaAñadir);
 
         // --- FILA 2: Desplegable de Tipos de Archivo ---
         panelFormulario.add(new JLabel("Tipo de documento:"));
-        panelFormulario.add(desplegableTipos);
+        panelFormulario.add(desplegableTiposAñadir);
 
         // --- FILA 3: Botón de Fecha
         JSpinner selectorFecha = new JSpinner(new SpinnerDateModel());
@@ -363,11 +370,11 @@ public class Ventana extends JFrame {
         
         botonGuardar.addActionListener(e -> {
             String rutaArchivo = botonSeleccionarArchivo.getText();
-            Familiar familiar = (Familiar) desplegableFamilia.getSelectedItem();
-            String tipo = (String) desplegableTipos.getSelectedItem();
+            Familiar familiar = (Familiar) desplegableFamiliaAñadir.getSelectedItem();
+            String tipo = (String) desplegableTiposAñadir.getSelectedItem();
             Date fechaDate = (Date) selectorFecha.getValue();
 
-            if (familiar != null && tipo != null && rutaArchivo.equals(DEFAULT_TEXT_BUTTON_SEARCH)) {
+            if (familiar != null && tipo != null && !rutaArchivo.equals(DEFAULT_TEXT_BUTTON_SEARCH)) {
                 File archivo = new File(rutaArchivo);
                 String hash = Utils.calcularHash(rutaArchivo);
                 String fecha = formato.format(fechaDate);
@@ -393,11 +400,11 @@ public class Ventana extends JFrame {
 
         JLabel labelBoton = new JLabel("Elegir familiar: ");
         panelCentral.add(labelBoton);
-        panelCentral.add(desplegableFamilia);
+        panelCentral.add(desplegableFamiliaBorrar);
 
         JButton botonBorrar = crearBotonBorrar();
         botonBorrar.addActionListener(e -> {
-            familiarBorrado = (Familiar) desplegableFamilia.getSelectedItem();
+            familiarBorrado = (Familiar) desplegableFamiliaBorrar.getSelectedItem();
 
             if (familiarBorrado != null) {
                 accionBorrarFamiliar.actionPerformed(e);
@@ -416,11 +423,11 @@ public class Ventana extends JFrame {
 
         JLabel labelBoton = new JLabel("Elegir Tipo: ");
         panelCentral.add(labelBoton);
-        panelCentral.add(desplegableTipos);
+        panelCentral.add(desplegableTiposBorrar);
 
         JButton botonBorrar = crearBotonBorrar();
         botonBorrar.addActionListener(e -> {
-            tipoBorrado = (String) desplegableTipos.getSelectedItem();
+            tipoBorrado = (String) desplegableTiposBorrar.getSelectedItem();
 
             if (tipoBorrado != null) {
                 accionBorrarTipo.actionPerformed(e);
@@ -545,12 +552,14 @@ public class Ventana extends JFrame {
     // SETTERS DE VARIABLES
     public void setFamilia(Familiar[] familia) {
         this.familia = familia;
-        desplegableFamilia.setModel(new DefaultComboBoxModel<>(familia));
+        desplegableFamiliaAñadir.setModel(new DefaultComboBoxModel<>(familia));
+        desplegableFamiliaBorrar.setModel(new DefaultComboBoxModel<>(familia));
     }
 
     public void setTipos(String[] tipos) {
         this.tipos = tipos;
-        desplegableTipos.setModel(new DefaultComboBoxModel<>(tipos));
+        desplegableTiposAñadir.setModel(new DefaultComboBoxModel<>(tipos));
+        desplegableTiposBorrar.setModel(new DefaultComboBoxModel<>(tipos));
     }
 
     public void setArchivos(Archivo[] archivos) {
