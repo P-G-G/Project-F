@@ -437,6 +437,7 @@ public class Ventana extends JFrame {
     }
      
     private void setMenuArchivos() {
+        // TODO AÑADIR BUSCADOR
         menuArchivos = new JPanel(new BorderLayout());
 
         // --- PANEL SUPERIOR ---
