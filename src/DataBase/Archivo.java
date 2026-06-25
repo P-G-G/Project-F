@@ -1,6 +1,7 @@
 package DataBase;
 
-import java.io.File;
-import java.util.Date;
-
-public record Archivo(File info, String tipo, Date fecha, Familiar familiar) { }
+public record Archivo(String nombre, String tipo, String hash, String ruta, String fecha, String dni) { 
+    public String toString() {
+        return nombre;  // CHECK nombre o ruta?
+    }
+}

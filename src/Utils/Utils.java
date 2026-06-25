@@ -35,6 +35,10 @@ public class Utils {
         }
     }
 
+    public static String calcularHash(String rutaArchivo) {
+        return calcularHash(Path.of(rutaArchivo));
+    }
+
     public static String calcularHash(Path rutaArchivo) {
         try {
             // 1. Elegimos el algoritmo (SHA-256 es el más seguro y estándar actual)

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 
 import Utils.Utils;
 
@@ -13,9 +12,6 @@ public class GestorBD {
 
     private final static String NOMBRE_CARPETA_DOCUMENTOS = "Documentos";
     private File documentos;
-
-    
-    private SimpleDateFormat formatoFecha;
 
     private final BD bd;
 
@@ -32,9 +28,6 @@ public class GestorBD {
                 System.out.println("Carpeta '" + NOMBRE_CARPETA_DOCUMENTOS + "' creada con éxito en el proyecto.");
             }
         }
-
-        // *** Formato de las fechas ***
-        formatoFecha = new SimpleDateFormat("yyyy-MM-dd");
     }
 
     public void insertarFamiliar(Familiar familiar) throws SQLException {
@@ -44,17 +37,15 @@ public class GestorBD {
     }
 
     public boolean insertarArchivo(Archivo archivo) throws SQLException {
-        Path archivoRuta = archivo.info().toPath();
-        String archivoNombre = archivo.info().getName();
-        String fecha = formatoFecha.format(archivo.fecha());
+        Path archivoRuta = Path.of(archivo.ruta());
         String hash = Utils.calcularHash(archivoRuta);
 
-        Path archivoRutaNueva = documentos.toPath().resolve(archivoNombre);
+        Path archivoRutaNueva = documentos.toPath().resolve(archivo.hash());
 
         bd.ejecutarSinConfirmarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + 
         " (nombre, tipo, ruta, hash, fecha, familiar) VALUES (?, ?, ?, ?, ?, ?);",
-                    archivoNombre, archivo.tipo(), archivoRutaNueva.toString(), 
-                    hash, fecha, archivo.familiar().dni());
+                    archivo.nombre(), archivo.tipo(), archivoRutaNueva.toString(), 
+                    hash, archivo.fecha(), archivo.dni());
         try {
             // Movemos el archivo
             Files.move(archivoRuta, archivoRutaNueva);
@@ -73,6 +64,18 @@ public class GestorBD {
     public void insertarTipo(String tipo) throws SQLException {
         bd.ejecutarSQL("INSERT INTO " + BD.TABLA_TIPOS + " (nombre) VALUES (?);", tipo);
         System.out.println("Tipo registrado con éxito.");
+    }
+
+    public void eliminarTipo(String tipo) throws SQLException {
+        bd.ejecutarSQL("DELETE FROM " + BD.TABLA_TIPOS + " WHERE nombre = (?);", tipo);
+    }
+
+    public void eliminarFamiliar(Familiar familiar) throws SQLException {
+        bd.ejecutarSQL("DELETE FROM " + BD.TABLA_FAMILIA + " WHERE dni = (?);", familiar.dni());
+    }
+
+    public void eliminarArchivo(Archivo archivo) throws SQLException {
+        bd.ejecutarSQL("DELETE FROM " + BD.TABLA_ARCHIVOS + " WHERE hash = (?);", archivo.hash());
     }
 
     public Familiar[] getFamilia() {
@@ -100,5 +103,24 @@ public class GestorBD {
         }
 
         return tipos;
-    }     
+    }    
+    
+    public Archivo[] getArchivos() {
+        Archivo[] archivos = null;
+        try {
+            archivos = bd.seleccionarSQL("SELECT * FROM " + BD.TABLA_ARCHIVOS,
+                    rs -> new Archivo(rs.getString("nombre"), 
+                                      rs.getString("tipo"),
+                                      rs.getString("hash"),
+                                      rs.getString("ruta"),
+                                      rs.getString("fecha"),
+                                      rs.getString("familiar")))
+                                      .toArray(new Archivo[0]);
+        } catch (SQLException e) {
+            System.err.println("Error al intentar seleccionar todos los tipos");
+            System.err.println(e.getMessage());
+        }
+
+        return archivos;
+    }
 }

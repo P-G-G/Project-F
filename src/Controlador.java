@@ -21,6 +21,26 @@ public class Controlador {
 
         ui.setAccionPedirFamilia(e -> pedirFamilia());
         ui.setAccionPedirTipos(e -> pedirTipos());
+        ui.setAccionPedirArchivos(e -> pedirArchivos());
+
+        ui.setAccionBorrarFamiliar(e -> borrarFamiliar());
+        ui.setAccionBorrarTipo(e -> borrarTipo());
+        ui.setAccionBorrarArchivo(e -> borrarArchivo());
+    }
+
+    private Object borrarArchivo() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'borrarArchivo'");
+    }
+
+    private Object borrarTipo() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'borrarTipo'");
+    }
+
+    private Object borrarFamiliar() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'borrarFamiliar'");
     }
 
     public void guardarFamiliar() {
@@ -62,5 +82,9 @@ public class Controlador {
 
     public void pedirTipos() {
         ui.setTipos(gestor.getTipos());
+    }
+
+    public void pedirArchivos() {
+        ui.setArchivos(gestor.getArchivos());
     }
 }
