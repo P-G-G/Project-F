@@ -9,6 +9,8 @@ import DataBase.Familiar;
 import Utils.Utils;
 
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -24,7 +26,6 @@ public class Ventana extends JFrame {
     public static String MENU_AÑADIR_FAMILIAR = "MENU_AÑADIR_FAMILIAR";
     public static String MENU_AÑADIR_TIPO = "MENU_AÑADIR_TIPO";
 
-    public static String MENU_BORRAR_ARCHIVO = "MENU_BORRAR_ARCHIVO";
     public static String MENU_BORRAR_FAMILIAR = "MENU_BORRAR_FAMILIAR";
     public static String MENU_BORRAR_TIPO = "MENU_BORRAR_TIPO";
 
@@ -45,7 +46,6 @@ public class Ventana extends JFrame {
     private JPanel menuAñadirFamiliar;
     private JPanel menuAñadirTipo;
 
-    private JPanel menuBorrarArchivo;
     private JPanel menuBorrarTipo;
     private JPanel menuBorrarFamiliar;
 
@@ -63,6 +63,8 @@ public class Ventana extends JFrame {
     private ActionListener accionPedirFamilia;
     private ActionListener accionPedirTipos;
     private ActionListener accionPedirArchivos;
+
+    // private 
 
     // Variables para guardar
     private Familiar[] familia;
@@ -89,7 +91,7 @@ public class Ventana extends JFrame {
         setTitle("Gestor de Archivos Familiares");
         setSize(700, 600);
         // TODO DETECTAR CIERRE Y CERRAR CONEXIÓN EN LA BD
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Que el programa acabe al cerrar la X
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(null); // Centrar en la pantalla
 
         // Inicializamos el gestor y el contenedor
@@ -108,7 +110,6 @@ public class Ventana extends JFrame {
         setMenuAñadirFamiliar();
         setMenuAñadirTipo();
 
-        setMenuBorrarArchivo();
         setMenuBorrarTipo();
         setMenuBorrarFamiliar();
 
@@ -121,7 +122,6 @@ public class Ventana extends JFrame {
         contenedor.add(menuAñadirFamiliar, MENU_AÑADIR_FAMILIAR);
         contenedor.add(menuAñadirTipo, MENU_AÑADIR_TIPO);
 
-        contenedor.add(menuBorrarArchivo, MENU_BORRAR_ARCHIVO);
         contenedor.add(menuBorrarTipo, MENU_BORRAR_TIPO);
         contenedor.add(menuBorrarFamiliar, MENU_BORRAR_FAMILIAR);
 
@@ -349,12 +349,13 @@ public class Ventana extends JFrame {
         panelFormulario.add(selectorFecha);
 
         // --- FILA 4: Tu botón de archivo ---
-        panelFormulario.add(new JLabel("Documento:"));
 
         JButton botonSeleccionarArchivo = new JButton(DEFAULT_TEXT_BUTTON_SEARCH);
         botonSeleccionarArchivo.addActionListener(e -> seleccionarArchivo(botonSeleccionarArchivo));
-        
+
+        panelFormulario.add(new JLabel("Documento:"));
         panelFormulario.add(botonSeleccionarArchivo);
+
         panelCentral.add(panelFormulario);
 
         // 3. BOTÓN FINAL DE GUARDAR
@@ -366,7 +367,7 @@ public class Ventana extends JFrame {
             String tipo = (String) desplegableTipos.getSelectedItem();
             Date fechaDate = (Date) selectorFecha.getValue();
 
-            if (familiar != null && tipo != null && rutaArchivo != DEFAULT_TEXT_BUTTON_SEARCH) {
+            if (familiar != null && tipo != null && rutaArchivo.equals(DEFAULT_TEXT_BUTTON_SEARCH)) {
                 File archivo = new File(rutaArchivo);
                 String hash = Utils.calcularHash(rutaArchivo);
                 String fecha = formato.format(fechaDate);
@@ -429,11 +430,6 @@ public class Ventana extends JFrame {
         menuBorrarTipo.add(panelSuperior, BorderLayout.NORTH);
         menuBorrarTipo.add(panelCentral, BorderLayout.CENTER);
         menuBorrarTipo.add(botonBorrar, BorderLayout.SOUTH);
-    }
-
-    private void setMenuBorrarArchivo() {
-        menuBorrarArchivo = new JPanel();
-        // TODO getMenuBorrarArchivo
     }
      
     private void setMenuArchivos() {
@@ -523,39 +519,27 @@ public class Ventana extends JFrame {
 
     // GETTERS DE variables
     public Archivo getArchivoGuardado() {
-        Archivo archivo = archivoGuardado;
-        archivoGuardado = null;
-        return archivo;
+        return archivoGuardado;
     }
 
     public Familiar getFamiliarGuardado() {
-        Familiar familiar = familiarGuardado;
-        familiarGuardado = null;
-        return familiar;
+        return familiarGuardado;
     }
 
     public String getTipoGuardado() {
-        String tipo = tipoGuardado;
-        tipoGuardado = null;
-        return tipo;
+        return tipoGuardado;
     }
 
     public List<Archivo> getArchivosBorrados() {
-        List<Archivo> archivos = archivosBorrados;
-        archivosBorrados = null;
-        return archivos;
+        return archivosBorrados;
     }
 
     public Familiar getFamiliarBorrado() {
-        Familiar familiar = familiarBorrado;
-        familiarBorrado = null;
-        return familiar;
+        return familiarBorrado;
     }
 
     public String getTipoBorrado() {
-        String tipo = tipoBorrado;
-        tipoBorrado = null;
-        return tipo;
+        return tipoBorrado;
     }
 
     // SETTERS DE VARIABLES
@@ -618,5 +602,18 @@ public class Ventana extends JFrame {
 
     public void setAccionBorrarTipo(ActionListener accion) {
         accionBorrarTipo = accion;
+    }
+
+    // Añadimos un método para que el Controlador pueda inyectar su código de cierre
+    public void setAccionCerrarVentana(Runnable accionCerrar) {
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // Ejecutamos lo que el controlador nos diga
+                accionCerrar.run();
+                // Matamos el programa limpiamente
+                System.exit(0); 
+            }
+        });
     }
 }

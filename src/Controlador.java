@@ -24,6 +24,8 @@ public class Controlador {
         ui.setAccionBorrarFamiliar(e -> borrarFamiliar());
         ui.setAccionBorrarTipo(e -> borrarTipo());
         ui.setAccionBorrarArchivos(e -> borrarArchivos());
+
+        ui.setAccionCerrarVentana(() -> gestor.cerrarConexion());
     }
 
     private void borrarArchivos() {

@@ -125,4 +125,8 @@ public class GestorBD {
 
         return archivos;
     }
+
+    public void cerrarConexion() {
+        bd.cerrarConexion();
+    }
 }

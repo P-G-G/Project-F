@@ -145,6 +145,15 @@ public class BD {
         return ejecutado;
     }
 
+    public void cerrarConexion() {
+        try {
+            conexion.close();
+            System.out.println("Conexión con SQLite cerrada correctamente.");
+        } catch (SQLException e) {
+            System.err.println("Error al cerrar la conexión: " + e.getMessage());
+        }
+    }
+
     /**
      * TODO
      * @param <T>
