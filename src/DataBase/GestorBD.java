@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.List;
 
 import Utils.Utils;
 
@@ -124,6 +125,23 @@ public class GestorBD {
         }
 
         return archivos;
+    }
+
+    public String getNombre(String dni) {
+        List<String> nombre = null;
+        try {
+            nombre = bd.seleccionarSQL("SELECT nombre FROM " + BD.TABLA_FAMILIA + " WHERE dni = ?",
+                rs -> rs.getString("nombre"), dni);
+        } catch (SQLException e) {
+            System.err.println("Error al intentar seleccionar al familiar con dni: " + dni);
+            System.err.println(e.getMessage());
+        }
+
+        if (nombre.isEmpty()) {
+            return null;
+        } else {
+            return nombre.getFirst();
+        }
     }
 
     public void cerrarConexion() {

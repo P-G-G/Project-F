@@ -155,7 +155,8 @@ public class BD {
     }
 
     /**
-     * TODO
+     * Selecciona a partir de un comando SQL SELECT con los parámetros
+     * y la información según el mapeador indicado
      * @param <T>
      * @param sql
      * @param mapeador

@@ -1,3 +1,4 @@
+package main;
 import javax.swing.SwingUtilities;
 
 import com.formdev.flatlaf.FlatDarkLaf;

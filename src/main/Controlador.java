@@ -1,3 +1,4 @@
+package main;
 import java.sql.SQLException;
 
 import DataBase.Archivo;
@@ -26,6 +27,8 @@ public class Controlador {
         ui.setAccionBorrarArchivos(e -> borrarArchivos());
 
         ui.setAccionCerrarVentana(() -> gestor.cerrarConexion());
+
+        ui.setTraductorDni(dni -> gestor.getNombre(dni));
     }
 
     private void borrarArchivos() {
