@@ -20,7 +20,6 @@ public class BD {
 
     private Connection conexion;
 
-    // TODO Hace un barrido de las carpetas y documentos que tiene para ver si está sincronizada?
     public BD() {
         try {
             // Nos conectamos con la base de datos mediante SQLite

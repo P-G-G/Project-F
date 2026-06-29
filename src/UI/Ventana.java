@@ -316,7 +316,7 @@ public class Ventana extends JFrame {
         JPanel panelSuperior = crearPanelSuperior("Registrar Nuevo Familiar");
         JPanel panelCentral = new JPanel(new GridBagLayout());
 
-        JPanel panelTextos = new JPanel(new GridLayout(2, 2));
+        JPanel panelTextos = new JPanel(new GridLayout(2, 2, 0, 0));
 
         JTextField txtDni = new JTextField();
         JTextField txtNombre = new JTextField();
@@ -336,8 +336,8 @@ public class Ventana extends JFrame {
         });
 
         // CHANGE para q se pueda introducir más comodamente la info
-        panelTextos.add(new JLabel("DNI"));
-        panelTextos.add(new JLabel("Nombre"));
+        panelTextos.add(new JLabel("NOMBRE", SwingConstants.CENTER));
+        panelTextos.add(new JLabel("DNI", SwingConstants.CENTER));
         panelTextos.add(txtDni);
         panelTextos.add(txtNombre);
 
@@ -475,22 +475,23 @@ public class Ventana extends JFrame {
         JPanel panelCentral = new JPanel(new BorderLayout());
 
             // Buscador
-            JPanel filtros = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+            JPanel filtros = new JPanel(new GridLayout(2, 4, 10, 0));
 
             campoBuscadorNombre = new JTextField();
-            filtros.add(new JLabel("Buscador:"));
-            filtros.add(campoBuscadorNombre);
+            filtros.add(new JLabel("Archivo", SwingConstants.CENTER));
 
             filtroTipos = new JComboBox<>();
-            filtros.add(new JLabel("Tipo:"));
-            filtros.add(filtroTipos);
+            filtros.add(new JLabel("Tipo", SwingConstants.CENTER));
 
             campoBuscadorFecha = new JTextField();
-            filtros.add(new JLabel("Fecha:"));
-            filtros.add(campoBuscadorFecha);
+            filtros.add(new JLabel("Fecha", SwingConstants.CENTER));
 
             filtroFamilia = new JComboBox<>();
-            filtros.add(new JLabel("Familiar:"));
+            filtros.add(new JLabel("Familiar", SwingConstants.CENTER));
+            
+            filtros.add(campoBuscadorNombre);
+            filtros.add(filtroTipos);
+            filtros.add(campoBuscadorFecha);
             filtros.add(filtroFamilia);
 
             panelCentral.add(filtros, BorderLayout.NORTH);
@@ -545,7 +546,7 @@ public class Ventana extends JFrame {
         // Metemos la tabla en su ScrollPane
         JScrollPane scroll = new JScrollPane(tablaDocumentos);
         scroll.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); 
-        panelCentral.add(scroll, BorderLayout.SOUTH);
+        panelCentral.add(scroll, BorderLayout.CENTER);
 
 
         // --- PANEL INFERIOR (El Botón de Abrir) ---
@@ -642,7 +643,7 @@ public class Ventana extends JFrame {
             }
 
             // 3. REGLA DE LA FECHA (Busca en la columna 2)
-            String fecha = (String) campoBuscadorNombre.getText();
+            String fecha = (String) campoBuscadorFecha.getText();
             if (fecha != null && !fecha.isBlank()) {
                 listaReglas.add(RowFilter.regexFilter(fecha, 2));
             }
