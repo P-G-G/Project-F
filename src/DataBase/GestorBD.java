@@ -42,7 +42,7 @@ public class GestorBD {
         Path archivoRuta = Path.of(archivo.ruta());
         String hash = Utils.calcularHash(archivoRuta);
 
-        Path archivoRutaNueva = documentos.toPath().resolve(archivo.hash());
+        Path archivoRutaNueva = documentos.toPath().resolve(archivo.hash() + "_" + archivo.nombre());
 
         bd.ejecutarSinConfirmarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + 
         " (nombre, tipo, ruta, hash, fecha, familiar) VALUES (?, ?, ?, ?, ?, ?);",
@@ -81,12 +81,13 @@ public class GestorBD {
         Desktop.getDesktop().moveToTrash(new File(archivo.ruta()));
     }
 
-    public Familiar[] getFamilia() {
-        Familiar[] familia = null;
+    public List<Familiar> getFamilia() {
+        List<Familiar> familia = null;
         try {
             familia = bd.seleccionarSQL("SELECT * FROM " + BD.TABLA_FAMILIA,
-                    rs -> new Familiar(rs.getString("dni"), rs.getString("nombre")))
-                    .toArray(new Familiar[0]);
+                    rs -> new Familiar(
+                        rs.getString("dni"), 
+                        rs.getString("nombre")));
         } catch (SQLException e) {
             System.err.println("Error al intentar seleccionar a todos los familiares");
         }
@@ -94,12 +95,11 @@ public class GestorBD {
         return familia;
     }
 
-    public String[] getTipos() {
-        String[] tipos = null;
+    public List<String> getTipos() {
+        List<String> tipos = null;
         try {
             tipos = bd.seleccionarSQL("SELECT * FROM " + BD.TABLA_TIPOS,
-                    rs -> rs.getString("nombre"))
-                    .toArray(new String[0]);
+                    rs -> rs.getString("nombre"));
         } catch (SQLException e) {
             System.err.println("Error al intentar seleccionar todos los tipos");
             System.err.println(e.getMessage());
@@ -108,8 +108,8 @@ public class GestorBD {
         return tipos;
     }    
     
-    public Archivo[] getArchivos() {
-        Archivo[] archivos = null;
+    public List<Archivo> getArchivos() {
+        List<Archivo> archivos = null;
         try {
             archivos = bd.seleccionarSQL("SELECT * FROM " + BD.TABLA_ARCHIVOS,
                     rs -> new Archivo(rs.getString("nombre"), 
@@ -117,8 +117,7 @@ public class GestorBD {
                                       rs.getString("hash"),
                                       rs.getString("ruta"),
                                       rs.getString("fecha"),
-                                      rs.getString("familiar")))
-                                      .toArray(new Archivo[0]);
+                                      rs.getString("familiar")));
         } catch (SQLException e) {
             System.err.println("Error al intentar seleccionar todos los tipos");
             System.err.println(e.getMessage());

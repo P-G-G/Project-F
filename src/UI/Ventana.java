@@ -4,6 +4,7 @@ import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 
 import DataBase.Archivo;
 import DataBase.Familiar;
@@ -15,7 +16,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,10 +36,10 @@ public class Ventana extends JFrame {
 
     private static String DEFAULT_TEXT_BUTTON_SEARCH = "📁 Buscar...";
 
-    // 1. El gestor de los menus
+    // Gestor de los menus
     public CardLayout gestor;
     
-    // 2. el panel contenedor
+    // Panel contenedor
     private JPanel contenedor;
 
     // Menus
@@ -69,22 +69,16 @@ public class Ventana extends JFrame {
 
     private Function<String, String> traductorDni;
 
-    // private 
-
     // Variables para guardar
-    private Familiar[] familia;
-    private String[] tipos;
-    private Archivo[] archivos;
+    private List<Familiar> familia;
+    private List<String> tipos;
+    private List<Archivo> archivos;
 
     private JComboBox<Familiar> desplegableFamiliaAñadir;
     private JComboBox<String> desplegableTiposAñadir;
 
     private JComboBox<Familiar> desplegableFamiliaBorrar;
     private JComboBox<String> desplegableTiposBorrar;
-
-    private static final String[] nombresColumnas = {"Nombre del Archivo", "Tipo", "Fecha", "Familiar"};
-    private DefaultTableModel modeloTabla;
-    private JTable tablaDocumentos;
 
     private Familiar familiarGuardado;
     private String tipoGuardado;
@@ -95,6 +89,16 @@ public class Ventana extends JFrame {
     private List<Archivo> archivosBorrados;
     
     SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+
+    private static final String[] nombresColumnas = {"Nombre del Archivo", "Tipo", "Fecha", "Familiar"};
+    private DefaultTableModel modeloTabla;
+    private JTable tablaDocumentos;
+    private JTextField campoBuscadorNombre;
+    private JComboBox<String> filtroTipos;
+    private JTextField campoBuscadorFecha;
+    private JComboBox<Familiar> filtroFamilia;
+    private TableRowSorter<DefaultTableModel> motorFiltros;
+
 
     public Ventana() {
 
@@ -107,16 +111,6 @@ public class Ventana extends JFrame {
         // Inicializamos el gestor y el contenedor
         gestor = new CardLayout();
         contenedor = new JPanel(gestor);
-
-        // Inicializamos variables
-        archivosBorrados = new LinkedList<>();
-
-        // Botones
-        desplegableFamiliaAñadir = new JComboBox<>();
-        desplegableTiposAñadir = new JComboBox<>();
-
-        desplegableFamiliaBorrar = new JComboBox<>();
-        desplegableTiposBorrar = new JComboBox<>();
 
         // Inicializamos todos los menus
         setMenuPrincipal();
@@ -212,12 +206,12 @@ public class Ventana extends JFrame {
         JButton añadirArchivo = new JButton("Añadir Archivo");
         añadirArchivo.addActionListener(e -> {
             accionPedirFamilia.actionPerformed(e);
-            actualizarBotonFamiliaAñadir();
 
             accionPedirTipos.actionPerformed(e);
-            actualizarBotonTiposAñadir();
 
             if (familia != null && tipos != null) {     // CHECK
+                actualizarDesplegable(desplegableFamiliaAñadir, familia);
+                actualizarDesplegable(desplegableTiposAñadir, tipos);
                 gestor.show(contenedor, MENU_AÑADIR_ARCHIVO);
             }
         });
@@ -232,10 +226,11 @@ public class Ventana extends JFrame {
         JButton borrarFamiliar = new JButton("Borrar Familiar");
         borrarFamiliar.addActionListener(e -> {
             accionPedirFamilia.actionPerformed(e);
-            actualizarBotonFamiliaBorrar();
 
-            if (familia != null)
+            if (familia != null) {
+                actualizarDesplegable(desplegableFamiliaBorrar, familia);
                 gestor.show(contenedor, MENU_BORRAR_FAMILIAR);
+            }
         });
 
         opcionesAñadirBorrar.add(borrarFamiliar);
@@ -248,10 +243,11 @@ public class Ventana extends JFrame {
         JButton borrarTipo = new JButton("Borrar Tipo");
         borrarTipo.addActionListener(e -> {
             accionPedirTipos.actionPerformed(e);
-            actualizarBotonTiposBorrar();
 
-            if (tipos != null)
+            if (tipos != null) {
+                actualizarDesplegable(desplegableTiposBorrar, tipos);
                 gestor.show(contenedor, MENU_BORRAR_TIPO);
+            }
         });
 
         opcionesAñadirBorrar.add(borrarTipo);
@@ -262,9 +258,13 @@ public class Ventana extends JFrame {
         JButton buscar = new JButton("Documentos");
         buscar.addActionListener(e -> {
             accionPedirArchivos.actionPerformed(e);
-            actualizarTablaDocumentos();
+            accionPedirFamilia.actionPerformed(e);
+            accionPedirTipos.actionPerformed(e);
 
             if (archivos != null) {
+                actualizarTablaDocumentos();
+                actualizarDesplegable(filtroFamilia, familia);
+                actualizarDesplegable(filtroTipos, tipos);
                 gestor.show(contenedor, MENU_ARCHIVOS);
             }
         });
@@ -358,10 +358,12 @@ public class Ventana extends JFrame {
         JPanel panelFormulario = new JPanel(new GridLayout(4, 2, 10, 20));
 
         // --- FILA 1: Desplegable de Familiares ---
+        desplegableFamiliaAñadir = new JComboBox<>();
         panelFormulario.add(new JLabel("Familiar:"));
         panelFormulario.add(desplegableFamiliaAñadir);
 
         // --- FILA 2: Desplegable de Tipos de Archivo ---
+        desplegableTiposAñadir = new JComboBox<>();
         panelFormulario.add(new JLabel("Tipo de documento:"));
         panelFormulario.add(desplegableTiposAñadir);
 
@@ -398,7 +400,9 @@ public class Ventana extends JFrame {
                 String hash = Utils.calcularHash(rutaArchivo);
                 String fecha = formato.format(fechaDate);
                 archivoGuardado = 
-                    new Archivo(archivo.getName(), tipo, hash, archivo.getAbsolutePath(), fecha, familiar.dni());
+                    new Archivo(archivo.getName(), 
+                        tipo, hash, archivo.getAbsolutePath(), 
+                        fecha, familiar.dni());
 
                 accionGuardarArchivo.actionPerformed(e);
             }
@@ -416,9 +420,9 @@ public class Ventana extends JFrame {
         menuBorrarFamiliar = new JPanel(new BorderLayout());
         JPanel panelSuperior = crearPanelSuperior("Borrar Familiar");
         JPanel panelCentral = new JPanel(new GridBagLayout());
-
-        JLabel labelBoton = new JLabel("Elegir familiar: ");
-        panelCentral.add(labelBoton);
+        
+        desplegableFamiliaBorrar = new JComboBox<>();
+        panelCentral.add(new JLabel("Elegir familiar: "));
         panelCentral.add(desplegableFamiliaBorrar);
 
         JButton botonBorrar = crearBotonBorrar();
@@ -427,6 +431,7 @@ public class Ventana extends JFrame {
 
             if (familiarBorrado != null) {
                 accionBorrarFamiliar.actionPerformed(e);
+                actualizarDesplegable(desplegableFamiliaBorrar, familia);
             }
         });
 
@@ -440,8 +445,8 @@ public class Ventana extends JFrame {
         JPanel panelSuperior = crearPanelSuperior("Borrar Tipo");
         JPanel panelCentral = new JPanel(new GridBagLayout());
 
-        JLabel labelBoton = new JLabel("Elegir Tipo: ");
-        panelCentral.add(labelBoton);
+        desplegableTiposBorrar = new JComboBox<>();
+        panelCentral.add(new JLabel("Elegir Tipo: "));
         panelCentral.add(desplegableTiposBorrar);
 
         JButton botonBorrar = crearBotonBorrar();
@@ -450,6 +455,7 @@ public class Ventana extends JFrame {
 
             if (tipoBorrado != null) {
                 accionBorrarTipo.actionPerformed(e);
+                actualizarDesplegable(desplegableTiposBorrar, tipos);
             }
         });
 
@@ -459,7 +465,6 @@ public class Ventana extends JFrame {
     }
      
     private void setMenuArchivos() {
-        // TODO AÑADIR BUSCADOR
         menuArchivos = new JPanel(new BorderLayout());
 
         // --- PANEL SUPERIOR ---
@@ -467,35 +472,80 @@ public class Ventana extends JFrame {
 
         
         // --- PANEL CENTRAL ---
-        modeloTabla = new DefaultTableModel(null, nombresColumnas) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Ninguna celda se puede editar visualmente
+        JPanel panelCentral = new JPanel(new BorderLayout());
+
+            // Buscador
+            JPanel filtros = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+
+            campoBuscadorNombre = new JTextField();
+            filtros.add(new JLabel("Buscador:"));
+            filtros.add(campoBuscadorNombre);
+
+            filtroTipos = new JComboBox<>();
+            filtros.add(new JLabel("Tipo:"));
+            filtros.add(filtroTipos);
+
+            campoBuscadorFecha = new JTextField();
+            filtros.add(new JLabel("Fecha:"));
+            filtros.add(campoBuscadorFecha);
+
+            filtroFamilia = new JComboBox<>();
+            filtros.add(new JLabel("Familiar:"));
+            filtros.add(filtroFamilia);
+
+            panelCentral.add(filtros, BorderLayout.NORTH);
+
+            // Tabla de documentos
+            modeloTabla = new DefaultTableModel(null, nombresColumnas) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Ninguna celda se puede editar visualmente
+                }
+            };
+
+            tablaDocumentos = new JTable(modeloTabla);
+            tablaDocumentos.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            tablaDocumentos.setRowHeight(25); // Filas un poco más altas para que respire el texto
+
+            tablaDocumentos.getColumnModel()
+                .getColumn(0)
+                .setPreferredWidth(250); // Nombre
+            tablaDocumentos.getColumnModel()
+                .getColumn(1)
+                .setPreferredWidth(100); // Tipo
+            tablaDocumentos.getColumnModel()
+                .getColumn(2)
+                .setPreferredWidth(100); // Fecha
+            tablaDocumentos.getColumnModel()
+                .getColumn(3)
+                .setPreferredWidth(150); // Familiar
+
+        motorFiltros = new TableRowSorter<>(modeloTabla);
+        tablaDocumentos.setRowSorter(motorFiltros);
+        
+        // Para que filtre cada vez que levantas una tecla escribiendo el nombre
+        campoBuscadorNombre.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                aplicarFiltrosCombinados();
             }
-        };
+        });
 
-        tablaDocumentos = new JTable(modeloTabla);
-        tablaDocumentos.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        tablaDocumentos.setRowHeight(25); // Filas un poco más altas para que respire el texto
+        // Para que filtre cada vez que cambia el desplegable de Tipo
+        filtroTipos.addActionListener(e -> aplicarFiltrosCombinados());
 
-        // Opcional: Ajustar el ancho de las columnas (ej: la fecha necesita menos espacio que el nombre)
-        tablaDocumentos.getColumnModel()
-            .getColumn(0)
-            .setPreferredWidth(250); // Nombre
-        tablaDocumentos.getColumnModel()
-            .getColumn(1)
-            .setPreferredWidth(100); // Tipo
-        tablaDocumentos.getColumnModel()
-            .getColumn(2)
-            .setPreferredWidth(100); // Fecha
-        tablaDocumentos.getColumnModel()
-            .getColumn(3)
-            .setPreferredWidth(150); // Familiar
+        campoBuscadorFecha.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                aplicarFiltrosCombinados();
+            }
+        });
 
-        // 4. Metemos la tabla en su ScrollPane (Igual que con el JList)
+        // Para que filtre cada vez que cambia el desplegable de Familiar
+        filtroFamilia.addActionListener(e -> aplicarFiltrosCombinados());
+
+        // Metemos la tabla en su ScrollPane
         JScrollPane scroll = new JScrollPane(tablaDocumentos);
         scroll.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); 
-        menuArchivos.add(scroll, BorderLayout.CENTER);
+        panelCentral.add(scroll, BorderLayout.SOUTH);
 
 
         // --- PANEL INFERIOR (El Botón de Abrir) ---
@@ -503,24 +553,32 @@ public class Ventana extends JFrame {
 
         JButton botonAbrirDocumento = new JButton("Abrir Documento Seleccionado");
         botonAbrirDocumento.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        botonAbrirDocumento.addActionListener(e -> 
-            abrirArchivo(archivos[tablaDocumentos.getSelectedRow()]));
+        botonAbrirDocumento.addActionListener(e -> {
+            int fila = tablaDocumentos.getSelectedRow();
+            if (fila >= 0) {
+                abrirArchivo(archivos.get(fila));
+            }
+        });
         
+        panelInferior.add(botonAbrirDocumento);
+        
+        archivosBorrados = new LinkedList<>();
         JButton botonEliminarDocumento = crearBotonBorrar();
         botonEliminarDocumento.addActionListener(e -> {
             for (int indice : tablaDocumentos.getSelectedRows()) {
-                archivosBorrados.add(archivos[indice]);
+                int indiceReal = tablaDocumentos.convertRowIndexToModel(indice);
+                archivosBorrados.add(archivos.get(indiceReal));
             }
 
             if (!archivosBorrados.isEmpty()) {
                 accionBorrarArchivos.actionPerformed(e);
+                actualizarTablaDocumentos();
             }
-
-
         });
 
-        panelInferior.add(botonAbrirDocumento);
         panelInferior.add(botonEliminarDocumento);
+
+        menuArchivos.add(panelCentral, BorderLayout.CENTER);
         menuArchivos.add(panelInferior, BorderLayout.SOUTH);
     }
     
@@ -543,6 +601,7 @@ public class Ventana extends JFrame {
         }
     }
 
+    // CHECK
     private void abrirArchivo(Archivo archivoSeleccionado) {
         try {
 
@@ -563,6 +622,43 @@ public class Ventana extends JFrame {
             System.err.println("Error del sistema al intentar abrir el archivo: " + e.getMessage());
         } catch (IllegalArgumentException e) {
             System.err.println("La ruta del archivo está corrupta o no es válida: " + e.getMessage());
+        }
+    }
+
+    public void aplicarFiltrosCombinados() {
+            // Lista para acumular todas las reglas que el usuario quiere aplicar
+            List<RowFilter<Object, Object>> listaReglas = new LinkedList<>();
+
+            // 1. REGLA DEL BUSCADOR (Busca en la columna 0)
+            String textoBuscador = campoBuscadorNombre.getText();
+            if (textoBuscador != null && !textoBuscador.isBlank()) {
+                listaReglas.add(RowFilter.regexFilter("(?i)" + textoBuscador, 0));
+            }
+
+            // 2. REGLA DEL TIPO (Busca en la columna 1)
+            String tipoSeleccionado = (String) filtroTipos.getSelectedItem();
+            if (tipoSeleccionado != null) {
+                listaReglas.add(RowFilter.regexFilter("(?i)^" + tipoSeleccionado + "$", 1));
+            }
+
+            // 3. REGLA DE LA FECHA (Busca en la columna 2)
+            String fecha = (String) campoBuscadorNombre.getText();
+            if (fecha != null && !fecha.isBlank()) {
+                listaReglas.add(RowFilter.regexFilter(fecha, 2));
+            }
+
+            // 4. REGLA DEL FAMILIAR (Busca en la columna 3)
+            Familiar familiarSeleccionado = (Familiar) filtroFamilia.getSelectedItem();
+            if (familiarSeleccionado != null) {
+                listaReglas.add(RowFilter.regexFilter("(?i)^" + familiarSeleccionado.nombre() + "$", 3));
+            }
+
+        if (listaReglas.isEmpty()) {
+            // Si no hay reglas (todo en blanco/Todos), mostramos la tabla completa
+            motorFiltros.setRowFilter(null);
+        } else {
+            // andFilter exige que la fila cumpla TODAS las reglas a la vez para poder verse
+            motorFiltros.setRowFilter(RowFilter.andFilter(listaReglas));
         }
     }
 
@@ -592,22 +688,6 @@ public class Ventana extends JFrame {
     }
 
     // SETTERS PARA ACTUALIZAR BOTONES
-    public void actualizarBotonFamiliaAñadir() {
-        desplegableFamiliaAñadir.setModel(new DefaultComboBoxModel<>(familia));
-    }
-
-    public void actualizarBotonFamiliaBorrar() {
-        desplegableFamiliaBorrar.setModel(new DefaultComboBoxModel<>(familia));
-    }
-
-    public void actualizarBotonTiposAñadir() {
-        desplegableTiposAñadir.setModel(new DefaultComboBoxModel<>(tipos));
-    }
-
-    public void actualizarBotonTiposBorrar() {
-        desplegableTiposBorrar.setModel(new DefaultComboBoxModel<>(tipos));
-    }
-
     public void actualizarTablaDocumentos() {
         // 1. Guardamos los archivos en la memoria de la ventana
         // this.memoriaArchivosTabla = archivos;
@@ -629,20 +709,27 @@ public class Ventana extends JFrame {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> void actualizarDesplegable(JComboBox<T> desplegable, List<T> datos) {
+        desplegable.setModel(new DefaultComboBoxModel<T>((T[]) datos.toArray()));
+        desplegable.setSelectedIndex(-1);
+    }
+
 
     // SETTERS DE VARIABLES
-    public void setFamilia(Familiar[] familia) {
+    public void setFamilia(List<Familiar> familia) {
         this.familia = familia;
     }
 
-    public void setTipos(String[] tipos) {
+    public void setTipos(List<String> tipos) {
         this.tipos = tipos;
     }
 
-    public void setArchivos(Archivo[] archivos) {
+    public void setArchivos(List<Archivo> archivos) {
         this.archivos = archivos;
         
     }
+
 
     // SETTERS DE ACCIONES
     public void setAccionGuardarArchivo(ActionListener accion) {

@@ -35,6 +35,7 @@ public class Controlador {
         for (Archivo archivo : ui.getArchivosBorrados()) {
             try {
                     gestor.eliminarArchivo(archivo);
+                    pedirArchivos();
                     System.out.println("Archivo eliminado con éxito");
             } catch (SQLException e) {
                 System.err.println("Error al intentar eliminar el archivo: " + e.getMessage());
@@ -47,6 +48,7 @@ public class Controlador {
     private void borrarTipo() {
         try {
             gestor.eliminarTipo(ui.getTipoBorrado());
+            pedirTipos();
             System.out.println("Tipo eliminado con éxito");
         } catch (SQLException e) {
             System.err.println("Error al intentar eliminar el tipo de archivo: " + e.getMessage());
@@ -58,6 +60,7 @@ public class Controlador {
     private void borrarFamiliar() {
         try {
             gestor.eliminarFamiliar(ui.getFamiliarBorrado());
+            pedirFamilia(); // Actualizar información si se ha eliminado con éxito
             System.out.println("Familiar eliminado con éxito");
         } catch (SQLException e) {
             System.err.println("Error al intentar eliminar el familiar: " + e.getMessage());
