@@ -2,6 +2,18 @@
 ✅ Centrar texto en el menu para añadir familiar
 ✅ Cambiar buscador de documentos
 
+✅ Fecha en documentos (cambiar formato)
+    ✅ Añadir filtros nulos para dejar de filtrar (aunque se podía dándole a volver)
+✅ Bug en los botones de Añadir familiar (cambiados de posición)
+
+
 Efecto visual de que ha salido bien o mal la operación
 Tamaño de las interfaces
 Hacer un barrido de las carpetas y documentos que tiene para ver si está sincronizada?
+Comprobar si funciona el ordenamiento de tipo y fecha
+
+Funcionalidades Extra:
+    Exportar archivos seleccionados/filtrados
+    Importar archivos
+    Mover archivos
+    Descartar último cambio

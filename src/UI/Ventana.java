@@ -264,7 +264,10 @@ public class Ventana extends JFrame {
             if (archivos != null) {
                 actualizarTablaDocumentos();
                 actualizarDesplegable(filtroFamilia, familia);
+                filtroFamilia.addItem(null);
+                
                 actualizarDesplegable(filtroTipos, tipos);
+                filtroTipos.addItem(null);
                 gestor.show(contenedor, MENU_ARCHIVOS);
             }
         });
@@ -338,8 +341,8 @@ public class Ventana extends JFrame {
         // CHANGE para q se pueda introducir más comodamente la info
         panelTextos.add(new JLabel("NOMBRE", SwingConstants.CENTER));
         panelTextos.add(new JLabel("DNI", SwingConstants.CENTER));
-        panelTextos.add(txtDni);
         panelTextos.add(txtNombre);
+        panelTextos.add(txtDni);
 
         panelCentral.add(panelTextos);
 
@@ -702,7 +705,7 @@ public class Ventana extends JFrame {
                 Object[] filaVisual = {
                     doc.nombre(),
                     doc.tipo(),
-                    doc.fecha(),
+                    Utils.cambiarFormatoFecha(doc.fecha(), "yyyy-MM-dd", "dd/MM/yyyy"),
                     traductorDni.apply(doc.dni())
                 };
                 modeloTabla.addRow(filaVisual);

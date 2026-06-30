@@ -2,6 +2,9 @@ package Utils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class Utils {
     public static void log(String mensaje) {
@@ -73,6 +76,28 @@ public class Utils {
             Thread.sleep(milis); 
         } catch (InterruptedException e) {
             System.err.println("El hilo fue interrumpido: " + e.getMessage());
+        }
+    }
+
+    public static String cambiarFormatoFecha(String fecha, String formatoActual, String formatoNuevo) {
+        // 1. Definimos el formato en el que VIENE la fecha 
+        // Por ejemplo, el que sueles usar en tu interfaz: Día/Mes/Año
+        DateTimeFormatter formatoEntrada = DateTimeFormatter.ofPattern(formatoActual);
+        
+        // 2. Definimos el formato en el que QUEREMOS la fecha
+        // Por ejemplo, el estándar ideal para ordenar fechas en SQLite: Año-Mes-Día
+        DateTimeFormatter formatoSalida = DateTimeFormatter.ofPattern(formatoNuevo);
+        
+        try {
+            // Paso A: Traducimos el texto a un objeto LocalDate real
+            LocalDate fechaReal = LocalDate.parse(fecha, formatoEntrada);
+            
+            // Paso B: Convertimos el objeto real de vuelta a texto con el nuevo formato
+            return fechaReal.format(formatoSalida);
+            
+        } catch (DateTimeParseException e) {
+            System.err.println("El texto introducido no coincide con el formato de entrada: " + e.getMessage());
+            return fecha; // Si falla, devolvemos lo original o null, según prefieras
         }
     }
 }
