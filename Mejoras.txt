@@ -11,6 +11,7 @@ Efecto visual de que ha salido bien o mal la operación
 Tamaño de las interfaces
 Hacer un barrido de las carpetas y documentos que tiene para ver si está sincronizada?
 Comprobar si funciona el ordenamiento de tipo y fecha
+Añadir On delete Restrict para cuando borres tipos o familiares
 
 Funcionalidades Extra:
     Exportar archivos seleccionados/filtrados
