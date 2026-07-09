@@ -566,9 +566,10 @@ public class Ventana extends JFrame {
         
         panelInferior.add(botonAbrirDocumento);
         
-        archivosBorrados = new LinkedList<>();
         JButton botonEliminarDocumento = crearBotonBorrar();
         botonEliminarDocumento.addActionListener(e -> {
+            
+            archivosBorrados = new LinkedList<>();
             for (int indice : tablaDocumentos.getSelectedRows()) {
                 int indiceReal = tablaDocumentos.convertRowIndexToModel(indice);
                 archivosBorrados.add(archivos.get(indiceReal));
@@ -787,5 +788,13 @@ public class Ventana extends JFrame {
 
     public void setTraductorDni(Function<String, String> traductor) {
         this.traductorDni = traductor;
+    }
+
+    // Métodos para mostrar mensajes en pantalla
+    public void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+    public void mostrarExito(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Éxito", JOptionPane.INFORMATION_MESSAGE);
     }
 }
