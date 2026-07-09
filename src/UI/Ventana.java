@@ -408,6 +408,8 @@ public class Ventana extends JFrame {
                         fecha, familiar.dni());
 
                 accionGuardarArchivo.actionPerformed(e);
+            } else {
+                mostrarError("Falta rellenar algún campo");
             }
             
             // Limpiamos el formulario para el siguiente
@@ -794,6 +796,7 @@ public class Ventana extends JFrame {
     public void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
+
     public void mostrarExito(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, "Éxito", JOptionPane.INFORMATION_MESSAGE);
     }
