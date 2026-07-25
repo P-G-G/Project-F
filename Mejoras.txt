@@ -3,18 +3,20 @@
 ✅ Cambiar buscador de documentos
 
 ✅ Fecha en documentos (cambiar formato)
-    ✅ Añadir filtros nulos para dejar de filtrar (aunque se podía dándole a volver)
+✅ Añadir filtros nulos para dejar de filtrar (aunque se podía dándole a volver)
 ✅ Bug en los botones de Añadir familiar (cambiados de posición)
 
+✅ Efecto visual de que ha salido bien o mal la operación
 
-Efecto visual de que ha salido bien o mal la operación
-Tamaño de las interfaces
-Hacer un barrido de las carpetas y documentos que tiene para ver si está sincronizada?
-Comprobar si funciona el ordenamiento de tipo y fecha
-Añadir On delete Restrict para cuando borres tipos o familiares
+❓ Pensar algo para no cambiar tanto los nombres
+❓ Añadir On delete Restrict para cuando borres tipos o familiares
+❓ Comprobar si funciona el ordenamiento de tipo y fecha
 
-Funcionalidades Extra:
-    Exportar archivos seleccionados/filtrados
-    Importar archivos
-    Mover archivos
-    Descartar último cambio
+Hacer un barrido de las carpetas y documentos que tiene para ver si está sincronizada
+Exportar archivos seleccionados/filtrados
+Importar archivos
+Modificar archivos: Familiar, tipo, fecha, ...
+Mover archivos
+Descartar último cambio
+
+Mejorar tamaño de las interfaces

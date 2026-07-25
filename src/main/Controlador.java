@@ -35,10 +35,9 @@ public class Controlador {
         for (Archivo archivo : ui.getArchivosBorrados()) {
             try {
                     gestor.eliminarArchivo(archivo);
-                    pedirArchivos();
-                    System.out.println("Archivo eliminado con éxito");
+                    ui.mostrarExito("Archivo eliminado con éxito");
             } catch (SQLException e) {
-                System.err.println("Error al intentar eliminar el archivo: " + e.getMessage());
+                ui.mostrarError("Error al intentar eliminar el archivo: " + e.getMessage());
             }
         }
         
@@ -49,9 +48,9 @@ public class Controlador {
         try {
             gestor.eliminarTipo(ui.getTipoBorrado());
             pedirTipos();
-            System.out.println("Tipo eliminado con éxito");
+            ui.mostrarExito("Tipo eliminado con éxito");
         } catch (SQLException e) {
-            System.err.println("Error al intentar eliminar el tipo de archivo: " + e.getMessage());
+            ui.mostrarError("Error al intentar eliminar el tipo de archivo: " + e.getMessage());
         }
 
         pedirTipos();
@@ -61,9 +60,9 @@ public class Controlador {
         try {
             gestor.eliminarFamiliar(ui.getFamiliarBorrado());
             pedirFamilia(); // Actualizar información si se ha eliminado con éxito
-            System.out.println("Familiar eliminado con éxito");
+            ui.mostrarExito("Familiar eliminado con éxito");
         } catch (SQLException e) {
-            System.err.println("Error al intentar eliminar el familiar: " + e.getMessage());
+            ui.mostrarError("Error al intentar eliminar el familiar: " + e.getMessage());
         }
 
         pedirFamilia();
@@ -73,9 +72,9 @@ public class Controlador {
         Familiar familiar = ui.getFamiliarGuardado();
         try {
             gestor.insertarFamiliar(familiar);
+            ui.mostrarExito("Familiar guardado con éxito");
         } catch (SQLException e) {
-            System.err.println("Error al intentar guardar el familiar en la base de datos");
-            System.err.println(e.getMessage());
+            ui.mostrarError("Error al intentar guardar el familiar en la base de datos:\n" + e.getMessage());
         }
     }
 
@@ -83,9 +82,9 @@ public class Controlador {
         String tipo = ui.getTipoGuardado();
         try {
             gestor.insertarTipo(tipo);
+            ui.mostrarExito("Tipo de documento guardado con éxito");
         } catch (SQLException e) {
-            System.err.println("Error al intentar guardar el tipo en la base de datos");
-            System.err.println(e.getMessage());
+            ui.mostrarError("Error al intentar guardar el tipo en la base de datos:\n" + e.getMessage());
         }
     }
 
@@ -93,12 +92,11 @@ public class Controlador {
         Archivo archivo = ui.getArchivoGuardado();
 
         try {
-            if (gestor.insertarArchivo(archivo)) {  // BUG puede ser el mismo archivo pero con distinto nombre
-                System.out.println("Archivo guardado con éxito");
+            if (gestor.insertarArchivo(archivo)) {
+                ui.mostrarExito("Archivo guardado con éxito");
             }
         } catch (SQLException e) {
-            System.err.println("Error al intentar guardar el archivo en la base de datos");
-            System.err.println(e.getMessage());
+            ui.mostrarError("Error al intentar guardar el archivo en la base de datos:\n" + e.getMessage());
         }
     }
 

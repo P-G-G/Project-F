@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 
 import Utils.Utils;
@@ -82,7 +83,7 @@ public class GestorBD {
     }
 
     public List<Familiar> getFamilia() {
-        List<Familiar> familia = null;
+        List<Familiar> familia = new LinkedList<Familiar>();
         try {
             familia = bd.seleccionarSQL("SELECT * FROM " + BD.TABLA_FAMILIA,
                     rs -> new Familiar(
@@ -96,7 +97,7 @@ public class GestorBD {
     }
 
     public List<String> getTipos() {
-        List<String> tipos = null;
+        List<String> tipos = new LinkedList<String>();
         try {
             tipos = bd.seleccionarSQL("SELECT * FROM " + BD.TABLA_TIPOS,
                     rs -> rs.getString("nombre"));
@@ -109,7 +110,7 @@ public class GestorBD {
     }    
     
     public List<Archivo> getArchivos() {
-        List<Archivo> archivos = null;
+        List<Archivo> archivos = new LinkedList<Archivo>();
         try {
             archivos = bd.seleccionarSQL("SELECT * FROM " + BD.TABLA_ARCHIVOS,
                     rs -> new Archivo(rs.getString("nombre"), 
@@ -137,7 +138,7 @@ public class GestorBD {
         }
 
         if (nombre.isEmpty()) {
-            return null;
+            return "";
         } else {
             return nombre.getFirst();
         }

@@ -26,6 +26,10 @@ public class BD {
             this.conexion = DriverManager.getConnection(BD_URL);
             System.out.println("Se ha establecido conexión con la base de datos");
             conexion.setAutoCommit(false);
+            try (Statement stmt = conexion.createStatement()) {
+                // Activamos las foreign keys para las relaciones
+                stmt.execute("PRAGMA foreign_keys = ON;");
+            }
 
             String[] createTables = getCreateTables();
 
