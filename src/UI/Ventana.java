@@ -1,6 +1,8 @@
 package UI;
 
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -412,6 +414,46 @@ public class Ventana extends JFrame {
             
             // Limpiamos el formulario para el siguiente
             botonSeleccionarArchivo.setText(DEFAULT_TEXT_BUTTON_SEARCH);
+        });
+
+        // --- Archivos arrastrables al panel ---
+        menuAñadirArchivo.setTransferHandler(new TransferHandler() {
+            
+            // 1. Fase de escaneo: ¿Qué me están arrastrando?
+            @Override
+            public boolean canImport(TransferSupport support) {
+                // Solo aceptamos si lo que arrastran es una lista de archivos físicos
+                return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+            }
+
+            // 2. Fase de ejecución: ¡Han soltado el clic!
+            @Override
+            public boolean importData(TransferSupport support) {
+                if (!canImport(support)) {
+                    return false;
+                }
+
+                try {
+                    // Extraemos los datos del "portapapeles" del sistema operativo
+                    Transferable transferable = support.getTransferable();
+                    
+                    // Hacemos el casteo seguro a una Lista de Archivos
+                    @SuppressWarnings("unchecked")
+                    List<File> archivosArrastrados = (List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
+
+                    if (archivosArrastrados != null && !archivosArrastrados.isEmpty()) {
+                        // Cogemos solo el primer archivo (por si el usuario arrastra varios de golpe)
+                        File archivoSoltado = archivosArrastrados.get(0);
+                        botonSeleccionarArchivo.setText(archivoSoltado.getAbsolutePath());
+                        
+                        return true;
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error al intentar procesar el archivo arrastrado.");
+                    e.printStackTrace();
+                }
+                return false;
+            }
         });
         
         menuAñadirArchivo.add(panelSuperior, BorderLayout.NORTH);
