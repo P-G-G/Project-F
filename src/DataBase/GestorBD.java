@@ -43,7 +43,7 @@ public class GestorBD {
         Path archivoRuta = Path.of(archivo.ruta());
         String hash = Utils.calcularHash(archivoRuta);
 
-        Path archivoRutaNueva = documentos.toPath().resolve(archivo.hash() + "_" + archivo.nombre());
+        Path archivoRutaNueva = documentos.toPath().resolve(archivo.hash());
 
         bd.ejecutarSinConfirmarSQL("INSERT INTO " + BD.TABLA_ARCHIVOS + 
         " (nombre, tipo, ruta, hash, fecha, familiar) VALUES (?, ?, ?, ?, ?, ?);",
