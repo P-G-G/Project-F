@@ -625,9 +625,22 @@ public class Ventana extends JFrame {
         botonAbrirDocumento.addActionListener(e -> {
             int fila = tablaDocumentos.getSelectedRow();
             if (fila >= 0) {
+                
+                // Desactivamos el botón (Por el spam al poder tardar un poco en abrirse)
+                botonAbrirDocumento.setEnabled(false);
+
                 // Convertimos la fila seleccionada dependiendo del modelo (por si está ordenado)
                 int indiceReal = tablaDocumentos.convertRowIndexToModel(fila);
                 abrirArchivo(archivos.get(indiceReal));
+
+                // Creamos un temporizador que espere 1 segundo en segundo plano
+                javax.swing.Timer temporizador = new javax.swing.Timer(1000, evento -> {
+                    // Volvemos a encender el botón pasado el segundo
+                    botonAbrirDocumento.setEnabled(true);
+                });
+                
+                temporizador.setRepeats(false); // Para que solo se ejecute una vez
+                temporizador.start();
             }
         });
         
@@ -687,8 +700,6 @@ public class Ventana extends JFrame {
 
             // Le dice a Windows/Mac que abra el archivo
             Desktop.getDesktop().open(archivo);
-
-            Utils.dormir(1000);
         } catch (IOException e) {
             System.err.println("Error del sistema al intentar abrir el archivo: " + e.getMessage());
         } catch (IllegalArgumentException e) {

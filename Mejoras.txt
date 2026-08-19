@@ -10,6 +10,11 @@
 
 ✅ Revisión de la IA
 
+✅ Bug al abrir documento filtrado
+✅ Bug al ordenar por fecha
+✅ Mejora para en vez de congelarse la APP, haya un temporizador en segundo plano para 
+desactivar/activad el botón de abrir archivo
+
 ❓ Pensar algo para no cambiar tanto los nombres
 ❓ Añadir On delete Restrict para cuando borres tipos o familiares
 ❓ Comprobar si funciona el ordenamiento de tipo y fecha
