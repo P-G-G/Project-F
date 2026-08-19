@@ -604,7 +604,9 @@ public class Ventana extends JFrame {
         botonAbrirDocumento.addActionListener(e -> {
             int fila = tablaDocumentos.getSelectedRow();
             if (fila >= 0) {
-                abrirArchivo(archivos.get(fila));
+                // Convertimos la fila seleccionada dependiendo del modelo (por si está ordenado)
+                int indiceReal = tablaDocumentos.convertRowIndexToModel(fila);
+                abrirArchivo(archivos.get(indiceReal));
             }
         });
         
