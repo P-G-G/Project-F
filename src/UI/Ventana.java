@@ -569,6 +569,27 @@ public class Ventana extends JFrame {
                 .setPreferredWidth(150); // Familiar
 
         motorFiltros = new TableRowSorter<>(modeloTabla);
+
+        // Ordena la fecha de forma correcta
+        motorFiltros.setComparator(2, (String fecha1, String fecha2) -> {
+            try {
+                // Le explicamos cómo están escritas visualmente en la tabla
+                SimpleDateFormat formatoVisual = new SimpleDateFormat("dd/MM/yyyy");
+                
+                // Convertimos el texto a fechas reales de Java
+                Date d1 = formatoVisual.parse(fecha1);
+                Date d2 = formatoVisual.parse(fecha2);
+                
+                // Java ya sabe perfectamente cómo comparar dos fechas cronológicamente
+                return d1.compareTo(d2);
+                
+            } catch (Exception ex) {
+                // Si por algún motivo una celda está vacía o mal escrita, 
+                // hacemos que no explote y use el orden alfabético normal
+                return fecha1.compareTo(fecha2);
+            }
+        });
+
         tablaDocumentos.setRowSorter(motorFiltros);
         
         // Para que filtre cada vez que levantas una tecla escribiendo el nombre
@@ -652,7 +673,6 @@ public class Ventana extends JFrame {
         }
     }
 
-    // CHECK
     private void abrirArchivo(Archivo archivoSeleccionado) {
         try {
 
