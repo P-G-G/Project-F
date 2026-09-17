@@ -1,4 +1,4 @@
-package UI;
+package GUI;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;

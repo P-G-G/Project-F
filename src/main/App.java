@@ -4,7 +4,7 @@ import javax.swing.SwingUtilities;
 import com.formdev.flatlaf.FlatDarkLaf;
 
 import DataBase.GestorBD;
-import UI.Ventana;
+import GUI.Ventana;
 
 public class App {
 
@@ -20,11 +20,12 @@ public class App {
                 System.err.println("No se pudo iniciar FlatLaf");
             }
 
-            // Creamos y mostramos la ventana
+            // Creamos la ventana
             Ventana ventana = new Ventana();
             
             new Controlador(gestor, ventana);
 
+            // Mostramos la ventana
             ventana.setVisible(true);
         });
     }
