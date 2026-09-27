@@ -11,39 +11,47 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 
+import java.util.logging.Logger;
+
 public class BD {
-    private static final String BD_URL = "jdbc:sqlite:BD.db";
+
+    private final Logger logger = Logger.getLogger(this.getClass().getName());
+
+    private static final String BD_URL = "jdbc:sqlite:.db";     // Base de datos oculta al usuario
+
     public static final String TABLA_FAMILIA = "familia";
     public static final String TABLA_ARCHIVOS = "archivos";
     public static final String TABLA_TIPOS = "tipos";
+
     private static final int NUM_TABLES = 3;
 
     private Connection conexion;
 
-    public BD() {
-        try {
-            // Nos conectamos con la base de datos mediante SQLite
-            this.conexion = DriverManager.getConnection(BD_URL);
-            System.out.println("Se ha establecido conexión con la base de datos");
-            conexion.setAutoCommit(false);
-            try (Statement stmt = conexion.createStatement()) {
-                // Activamos las foreign keys para las relaciones
-                stmt.execute("PRAGMA foreign_keys = ON;");
-            }
+    public BD() throws SQLException {
 
-            String[] createTables = getCreateTables();
+        // Nos intentamos conectar con la base de datos mediante SQLite
+        conexion = DriverManager.getConnection(BD_URL);     // Throws SQL exceptions
+        logger.info("Se ha establecido conexión con la base de datos");
 
-            if(!ejecutarSQL(createTables)){
-                System.err.println("Error ejecutando las sentencias para inicializar la base de datos");
-                System.exit(1); // CHECK
-            }
+        // Desactivamos auto commit
+        conexion.setAutoCommit(false);          // Throws SQL exceptions
+        logger.fine("Auto commit desactivado");
 
-            System.out.println("Se ha terminado de preparar la base de datos");
-        } catch (Exception e) {
-            System.err.println(
-                "Error al intentar conectarse a la base de datos de la aplicación: " + e.getMessage());
-            System.exit(1);
+        // Activamos las foreign keys para las relaciones
+        Statement statement = conexion.createStatement();   // Throws SQL exceptions
+        statement.execute("PRAGMA foreign_keys = ON;");
+        logger.fine("Foreign keys activadas");
+
+
+        // Inicializamos las tablas si no existen todavia
+        String[] createTables = getCreateTables();
+        if(ejecutarSQL(createTables) == false){
+            logger.severe("Error ejecutando las sentencias para inicializar la base de datos");
+            throw new SQLException();                       // Throws SQL exceptions
         }
+        logger.fine("Tablas inicializadas");
+
+        logger.info("Se ha terminado de preparar la base de datos");
     }
 
     private String[] getCreateTables() {
@@ -131,17 +139,19 @@ public class BD {
             conexion.commit();
             ejecutado = true;
         } catch (BatchUpdateException e) {
-            System.err.println("Error la sentencia no se ha ejecutado correctamente:\n" + sentencia_actual);
-            System.err.println("Información del error: " + e.getMessage());
+            logger.warning("Error la sentencia no se ha ejecutado correctamente:\n" + sentencia_actual);
+            logger.warning("Información del error: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Error al intentar ejecutar sentencias en la base de datos: " + e.getMessage());
+            logger.warning("Error al intentar ejecutar sentencias en la base de datos: " + e.getMessage());
 
             try {
                 conexion.rollback();
-                System.out.println("Sentencias deshechas por seguridad");
+                logger.info("Sentencias deshechas por seguridad");
             } catch (SQLException ex) {
-                System.err.println("Error al intentar hacer el rollback de las sentencias " + ex.getMessage());
-                throw new RuntimeException("¿Conexión perdida al intentar hacer el rollback?");
+                logger.severe("Error al intentar hacer el rollback de las sentencias " + ex.getMessage());
+                // CHECK ¿ Qué hacer ?
+                // logger.info("Intentando cerrar la conexión");
+                //     cerrarConexion();
             }
         }
         
@@ -151,9 +161,9 @@ public class BD {
     public void cerrarConexion() {
         try {
             conexion.close();
-            System.out.println("Conexión con SQLite cerrada correctamente.");
+            logger.info("Conexión de la base de datos cerrada correctamente");
         } catch (SQLException e) {
-            System.err.println("Error al cerrar la conexión: " + e.getMessage());
+            logger.warning("No se pudo cerrar la conexión con la base de datos");
         }
     }
 
@@ -168,24 +178,25 @@ public class BD {
      * @throws SQLException
      */
     public <T> List<T> seleccionarSQL(String sql, MapeadorFila<T> mapeador, Object... parametros) throws SQLException {
-    List<T> resultados = new LinkedList<>();
+        List<T> resultados = new LinkedList<>();
 
-    // 1. Envolvemos SOLO el PreparedStatement
-    try (PreparedStatement pstmt = conexion.prepareStatement(sql)) {
+        //  Envolvemos el PreparedStatement
+        try (PreparedStatement pstmt = conexion.prepareStatement(sql)) {
 
-        for (int i = 0; i < parametros.length; i++) {
-            pstmt.setObject(i + 1, parametros[i]);
-        }
-
-        // 2. Envolvemos SOLO el ResultSet
-        try (ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-                resultados.add(mapeador.mapear(rs));
+            for (int i = 0; i < parametros.length; i++) {
+                pstmt.setObject(i + 1, parametros[i]);
             }
+
+            // Envolvemos el ResultSet
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    resultados.add(mapeador.mapear(rs));
+                }
+            }
+            
         }
-        
+
+        return resultados;
     }
 
-    return resultados;
-}
 }

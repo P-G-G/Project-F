@@ -8,18 +8,21 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import Utils.Utils;
 
 public class GestorBD {
+
+    private final Logger logger = Logger.getLogger(this.getClass().getName());
 
     private final static String NOMBRE_CARPETA_DOCUMENTOS = "Documentos";
     private File documentos;
 
     private final BD bd;
 
-    public GestorBD() {
-        bd = new BD();
+    public GestorBD() throws SQLException {
+        bd = new BD();  // throws SQLException
 
         // *** Carpeta documentos ***
         documentos = new File(NOMBRE_CARPETA_DOCUMENTOS);
@@ -28,7 +31,9 @@ public class GestorBD {
         if (!documentos.exists()) {
             // mkdirs() crea la carpeta
             if (documentos.mkdir()) {
-                System.out.println("Carpeta '" + NOMBRE_CARPETA_DOCUMENTOS + "' creada con éxito en el proyecto.");
+                logger.info("Carpeta '" + NOMBRE_CARPETA_DOCUMENTOS + "' creada con éxito en el proyecto.");
+            } else {
+                throw new SQLException("No se pudo crear la carpeta para guardar los documentos de la base de datos");
             }
         }
     }
@@ -36,7 +41,7 @@ public class GestorBD {
     public void insertarFamiliar(Familiar familiar) throws SQLException {
         bd.ejecutarSQL("INSERT INTO " + BD.TABLA_FAMILIA + " (dni, nombre) VALUES (?, ?);", 
                         familiar.toArray());
-        System.out.println("Familiar registrado con éxito.");
+        logger.info("Familiar registrado con éxito.");
     }
 
     public boolean insertarArchivo(Archivo archivo) throws SQLException {
@@ -52,13 +57,12 @@ public class GestorBD {
         try {
             // Movemos el archivo
             Files.move(archivoRuta, archivoRutaNueva);
-            System.out.println("Fichero movido con éxito");
+            logger.info("Fichero movido con éxito");
             bd.confirmarSQL();
             return true;
         } catch (IOException e) {
-            System.err.println("Error al mover el archivo al proyecto");
-            System.err.println(e.getMessage());
-            System.out.println("Deshaciendo operación en la base de datos");
+            logger.warning("Error al mover el archivo al proyecto: " + e.getMessage());
+            logger.info("Deshaciendo operación en la base de datos");
             bd.deshacerSQL();
             return false;
         }
@@ -66,7 +70,7 @@ public class GestorBD {
 
     public void insertarTipo(String tipo) throws SQLException {
         bd.ejecutarSQL("INSERT INTO " + BD.TABLA_TIPOS + " (nombre) VALUES (?);", tipo);
-        System.out.println("Tipo registrado con éxito.");
+        logger.info("Tipo registrado con éxito.");
     }
 
     public void eliminarTipo(String tipo) throws SQLException {
@@ -90,7 +94,7 @@ public class GestorBD {
                         rs.getString("dni"), 
                         rs.getString("nombre")));
         } catch (SQLException e) {
-            System.err.println("Error al intentar seleccionar a todos los familiares");
+            logger.warning("Error al intentar seleccionar a todos los familiares: " + e.getMessage());
         }
 
         return familia;
@@ -102,8 +106,7 @@ public class GestorBD {
             tipos = bd.seleccionarSQL("SELECT * FROM " + BD.TABLA_TIPOS,
                     rs -> rs.getString("nombre"));
         } catch (SQLException e) {
-            System.err.println("Error al intentar seleccionar todos los tipos");
-            System.err.println(e.getMessage());
+            logger.warning("Error al intentar seleccionar todos los tipos: " + e.getMessage());
         }
 
         return tipos;
@@ -120,8 +123,7 @@ public class GestorBD {
                                       rs.getString("fecha"),
                                       rs.getString("familiar")));
         } catch (SQLException e) {
-            System.err.println("Error al intentar seleccionar todos los tipos");
-            System.err.println(e.getMessage());
+            logger.warning("Error al intentar seleccionar todos los tipos:" + e.getMessage());
         }
 
         return archivos;
@@ -133,8 +135,7 @@ public class GestorBD {
             nombre = bd.seleccionarSQL("SELECT nombre FROM " + BD.TABLA_FAMILIA + " WHERE dni = ?",
                 rs -> rs.getString("nombre"), dni);
         } catch (SQLException e) {
-            System.err.println("Error al intentar seleccionar al familiar con dni: " + dni);
-            System.err.println(e.getMessage());
+            logger.warning("Error: <" + e.getMessage() + "> al intentar seleccionar al familiar con dni: " + dni);
         }
 
         if (nombre.isEmpty()) {

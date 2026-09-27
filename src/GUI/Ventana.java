@@ -4,27 +4,35 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
 import DataBase.Archivo;
 import DataBase.Familiar;
+
 import Utils.Utils;
 
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+// CHECK Debería de hacerse otra clase gestor de archivos
 import java.io.File;
 import java.io.IOException;
+
 import java.text.SimpleDateFormat;
+
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 public class Ventana extends JFrame {
 
+    private final Logger logger = Logger.getLogger(this.getClass().getName());
+    
     public static String MENU_PRINCIPAL = "MENU_PRINCIPAL";
 
     public static String MENU_AÑADIR_ARCHIVO = "MENU_AÑADIR_ARCHIVO";
@@ -93,6 +101,7 @@ public class Ventana extends JFrame {
     SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
 
     private static final String[] nombresColumnas = {"Nombre del Archivo", "Tipo", "Fecha", "Familiar"};
+
     private DefaultTableModel modeloTabla;
     private JTable tablaDocumentos;
     private JTextField campoBuscadorNombre;
@@ -451,8 +460,7 @@ public class Ventana extends JFrame {
                         return true;
                     }
                 } catch (Exception e) {
-                    System.err.println("Error al intentar procesar el archivo arrastrado.");
-                    e.printStackTrace();
+                    logger.warning("Error al intentar procesar el archivo arrastrado: " + e.getMessage());
                 }
                 return false;
             }
@@ -694,16 +702,16 @@ public class Ventana extends JFrame {
 
             // Seguridad básica: Comprobar que el archivo realmente sigue ahí
             if (!archivo.exists()) {
-                System.err.println("No se puede abrir: El archivo no existe en la ruta especificada.");
+                logger.warning("No se puede abrir el archivo, no existe en la ruta especificada.");
                 return;
             }
 
             // Le dice a Windows/Mac que abra el archivo
             Desktop.getDesktop().open(archivo);
         } catch (IOException e) {
-            System.err.println("Error del sistema al intentar abrir el archivo: " + e.getMessage());
+            logger.warning("Error del sistema al intentar abrir el archivo: " + e.getMessage());
         } catch (IllegalArgumentException e) {
-            System.err.println("La ruta del archivo está corrupta o no es válida: " + e.getMessage());
+            logger.warning("La ruta del archivo está corrupta o no es válida: " + e.getMessage());
         }
     }
 
@@ -770,14 +778,11 @@ public class Ventana extends JFrame {
     }
 
     // SETTERS PARA ACTUALIZAR BOTONES
-    public void actualizarTablaDocumentos() {
-        // 1. Guardamos los archivos en la memoria de la ventana
-        // this.memoriaArchivosTabla = archivos;
-        
-        // 2. Borramos las filas antiguas por si venimos de otra búsqueda
+    public void actualizarTablaDocumentos() {        
+        // Borramos las filas antiguas por si venimos de otra búsqueda
         modeloTabla.setRowCount(0); 
         
-        // 3. Rellenamos la tabla fila a fila
+        // Rellenamos la tabla fila a fila
         if (archivos != null) {
             for (Archivo doc : archivos) {
                 Object[] filaVisual = {
@@ -786,6 +791,7 @@ public class Ventana extends JFrame {
                     Utils.cambiarFormatoFecha(doc.fecha(), "yyyy-MM-dd", "dd/MM/yyyy"),
                     traductorDni.apply(doc.dni())
                 };
+
                 modeloTabla.addRow(filaVisual);
             }
         }
