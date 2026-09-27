@@ -14,17 +14,17 @@ import GUI.Ventana;
 
 public class App {
 
-    private static final String LOGGING_FILENAME = "project-f.log" ;
+    private static final String LOGGING_FILENAME = "logging.log" ;
     private static Logger logger;
 
     private static void configurar_logging() {
         try {
             // Configuramos el archivo físico
-            FileHandler fileHandler = new FileHandler(LOGGING_FILENAME, true);
+            FileHandler fileHandler = new FileHandler(LOGGING_FILENAME, false);
             fileHandler.setFormatter(new SimpleFormatter());
             
             // Atrapamos el logger global de todo el sistema Java y le enchufamos nuestro archivo
-            Logger logger = Logger.getLogger(""); 
+            logger = Logger.getLogger(""); 
             
             // Opcional: quitamos los handlers por defecto para que no salga por consola duplicado
             for (Handler h : logger.getHandlers()) {
@@ -34,7 +34,7 @@ public class App {
             logger.addHandler(fileHandler);
             
         } catch (Exception e) {
-            System.err.println("Fallo al iniciar el sistema de logs.");
+            System.err.println("Fallo al iniciar el sistema de logs");
         }
     }
 
@@ -61,9 +61,7 @@ public class App {
                 // Mostramos la ventana
                 ventana.setVisible(true);
             });
-            
-            // Hilo principal termina
-            System.exit(0);
+
         } catch (SQLException e) {
             logger.severe("No se pudo crear el gestor de la base de datos: " + e.getMessage());
             System.exit(1);
