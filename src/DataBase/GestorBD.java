@@ -41,7 +41,6 @@ public class GestorBD {
     public void insertarFamiliar(Familiar familiar) throws SQLException {
         bd.ejecutarSQL("INSERT INTO " + BD.TABLA_FAMILIA + " (dni, nombre) VALUES (?, ?);", 
                         familiar.toArray());
-        logger.info("Familiar registrado con éxito.");
     }
 
     public boolean insertarArchivo(Archivo archivo) throws SQLException {
@@ -70,7 +69,6 @@ public class GestorBD {
 
     public void insertarTipo(String tipo) throws SQLException {
         bd.ejecutarSQL("INSERT INTO " + BD.TABLA_TIPOS + " (nombre) VALUES (?);", tipo);
-        logger.info("Tipo registrado con éxito.");
     }
 
     public void eliminarTipo(String tipo) throws SQLException {
